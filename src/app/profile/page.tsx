@@ -1,14 +1,14 @@
 "use client";
 import React from "react";
 import { Trophy, Award, Rocket } from "lucide-react";
-import { ProfileSummary } from '@/components/profile/ProfileSummary';
-import { AppSidebar } from '@/components/common/AppSidebar';
-import { Achievements } from '@/components/profile/Achievements';
-import { PersonalInfoForm } from '@/components/profile/PersonalInfoForm';
-import { LearningActivity } from '@/components/profile/LearningActivity';
-import { ProjectsBuilt } from '@/components/profile/ProjectsBuilt';
-import { MyRoadmaps } from '@/components/profile/MyRoadmaps';
-import { SkillsList } from '@/components/profile/SkillsList';
+import { ProfileSummary } from "@/components/profile/ProfileSummary";
+import { AppNavbar } from "@/components/common/AppNavbar";
+import { Achievements } from "@/components/profile/Achievements";
+import { PersonalInfoForm } from "@/components/profile/PersonalInfoForm";
+import { LearningActivity } from "@/components/profile/LearningActivity";
+import { ProjectsBuilt } from "@/components/profile/ProjectsBuilt";
+import { MyRoadmaps } from "@/components/profile/MyRoadmaps";
+import { SkillsList } from "@/components/profile/SkillsList";
 
 // Mock data for the profile page
 const userProfile = {
@@ -74,7 +74,6 @@ const userProfile = {
 };
 
 export default function ProfilePage() {
-
   const roadmapsStarted = userProfile.roadmaps.length;
   const modulesCompleted = userProfile.roadmaps.reduce((total, roadmap) => {
     return total + Math.floor(roadmap.modules * (roadmap.progress / 100));
@@ -82,12 +81,15 @@ export default function ProfilePage() {
 
   return (
     <div className="flex min-h-screen">
-      <AppSidebar />
+      <AppNavbar />
       <main className="flex-1 max-w-7xl mx-auto py-10 px-4 md:px-8 md:ml-64">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
           {/* Profile Sidebar */}
           <div className="lg:col-span-1 flex flex-col gap-8">
-            <ProfileSummary user={userProfile} stats={{ roadmapsStarted, modulesCompleted }} />
+            <ProfileSummary
+              user={userProfile}
+              stats={{ roadmapsStarted, modulesCompleted }}
+            />
             <Achievements achievements={userProfile.achievements} />
           </div>
           {/* Main Content Area */}
@@ -97,7 +99,8 @@ export default function ProfilePage() {
                 Welcome, {userProfile.name}!
               </h1>
               <p className="text-lg text-muted-foreground">
-                Track your progress, manage your learning, and showcase your achievements.
+                Track your progress, manage your learning, and showcase your
+                achievements.
               </p>
             </div>
             <PersonalInfoForm user={userProfile} />

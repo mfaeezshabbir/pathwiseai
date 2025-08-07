@@ -1,5 +1,10 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Trophy, Award, Rocket } from 'lucide-react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 
 export function Achievements({ achievements }: { achievements: any[] }) {
   return (
@@ -21,7 +26,9 @@ export function Achievements({ achievements }: { achievements: any[] }) {
               <Icon className="mr-4 h-8 w-8 text-yellow-500" />
               <div>
                 <p className="font-semibold">{achievement.title}</p>
-                <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {achievement.description}
+                </p>
               </div>
             </div>
           );
