@@ -1,13 +1,19 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import React from 'react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import React from "react";
 
 export function AppCard({
   title,
   description,
   children,
-  className = '',
-  headerClass = '',
-  contentClass = '',
+  className = "",
+  headerClass = "",
+  contentClass = "",
 }: {
   title?: string;
   description?: string;

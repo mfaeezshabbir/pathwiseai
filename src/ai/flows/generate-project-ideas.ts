@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 /**
  * @fileOverview A flow to generate project ideas based on learned skills.
@@ -8,30 +8,36 @@
  * - GenerateProjectIdeasOutput - The return type for the generateProjectIdeas function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const GenerateProjectIdeasInputSchema = z.object({
   skills: z
     .array(z.string())
-    .describe('A list of skills the user has recently learned.'),
-  roadmapName: z.string().describe('The name of the learning roadmap.'),
+    .describe("A list of skills the user has recently learned."),
+  roadmapName: z.string().describe("The name of the learning roadmap."),
 });
-export type GenerateProjectIdeasInput = z.infer<typeof GenerateProjectIdeasInputSchema>;
+export type GenerateProjectIdeasInput = z.infer<
+  typeof GenerateProjectIdeasInputSchema
+>;
 
 const GenerateProjectIdeasOutputSchema = z.object({
-  projectIdeas: z.array(z.string()).describe('A list of project ideas.'),
+  projectIdeas: z.array(z.string()).describe("A list of project ideas."),
 });
-export type GenerateProjectIdeasOutput = z.infer<typeof GenerateProjectIdeasOutputSchema>;
+export type GenerateProjectIdeasOutput = z.infer<
+  typeof GenerateProjectIdeasOutputSchema
+>;
 
-export async function generateProjectIdeas(input: GenerateProjectIdeasInput): Promise<GenerateProjectIdeasOutput> {
+export async function generateProjectIdeas(
+  input: GenerateProjectIdeasInput,
+): Promise<GenerateProjectIdeasOutput> {
   return generateProjectIdeasFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateProjectIdeasPrompt',
-  input: {schema: GenerateProjectIdeasInputSchema},
-  output: {schema: GenerateProjectIdeasOutputSchema},
+  name: "generateProjectIdeasPrompt",
+  input: { schema: GenerateProjectIdeasInputSchema },
+  output: { schema: GenerateProjectIdeasOutputSchema },
   prompt: `You are an AI project idea generator, specializing in coming up with interesting and creative project ideas based on a user's skills.
 
 You will be provided with a list of skills that the user has learned, and the name of their roadmap.
@@ -44,12 +50,12 @@ Roadmap: {{roadmapName}}`,
 
 const generateProjectIdeasFlow = ai.defineFlow(
   {
-    name: 'generateProjectIdeasFlow',
+    name: "generateProjectIdeasFlow",
     inputSchema: GenerateProjectIdeasInputSchema,
     outputSchema: GenerateProjectIdeasOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await prompt(input);
     return output!;
-  }
+  },
 );

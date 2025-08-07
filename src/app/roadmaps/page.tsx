@@ -14,7 +14,7 @@ const mockRoadmaps = [
 export default function RoadmapsPage() {
   // In a real app, fetch the user's roadmaps here
   const [roadmapData, setRoadmapData] = useState<GenerateRoadmapOutput | null>(
-    null
+    null,
   );
   const [isLoading, setIsLoading] = useState(false);
 

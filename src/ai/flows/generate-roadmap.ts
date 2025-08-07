@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 /**
  * @fileOverview Generates a personalized learning roadmap based on user input.
@@ -8,59 +8,125 @@
  * - GenerateRoadmapOutput - The return type for the generateRoadmap function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const GenerateRoadmapInputSchema = z.object({
-  desiredSkill: z.string().describe('The skill the user wants to learn.'),
-  knowledgeLevel: z.string().describe("The user's current knowledge level (e.g., beginner, intermediate, advanced)."),
-  availableTime: z.string().describe('The amount of time the user has available per week (e.g., 5 hours, 10 hours).'),
-  learningStyle: z.string().optional().describe('The preferred learning style of the user (e.g., video-first, hands-on coding, theory, project-based).'),
+  desiredSkill: z.string().describe("The skill the user wants to learn."),
+  knowledgeLevel: z
+    .string()
+    .describe(
+      "The user's current knowledge level (e.g., beginner, intermediate, advanced).",
+    ),
+  availableTime: z
+    .string()
+    .describe(
+      "The amount of time the user has available per week (e.g., 5 hours, 10 hours).",
+    ),
+  learningStyle: z
+    .string()
+    .optional()
+    .describe(
+      "The preferred learning style of the user (e.g., video-first, hands-on coding, theory, project-based).",
+    ),
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
 const RoadmapResourceSchema = z.object({
-    title: z.string().describe('The title of the learning resource.'),
-    url: z.string().optional().describe('The URL for the learning resource. This should be a real, valid URL if available.'),
-    description: z.string().optional().describe('A brief, one-sentence description of the resource.'),
+  title: z.string().describe("The title of the learning resource."),
+  url: z
+    .string()
+    .optional()
+    .describe(
+      "The URL for the learning resource. This should be a real, valid URL if available.",
+    ),
+  description: z
+    .string()
+    .optional()
+    .describe("A brief, one-sentence description of the resource."),
 });
 export type RoadmapResource = z.infer<typeof RoadmapResourceSchema>;
 
 const RoadmapUnitSchema = z.object({
-    title: z.string().describe('The title of the unit, which is a sub-topic within a module.'),
-    objective: z.string().describe("A clear, one-sentence learning objective for this unit. Example: 'Understand how Docker networking works'"),
-    summary: z.string().describe("A mini AI-generated summary or concept breakdown for the unit's topic."),
-    task: z.string().describe("A hands-on task or quiz to test understanding. Example: 'Run your first container and expose a port.'"),
-    resources: z.array(RoadmapResourceSchema).describe('A list of curated learning resources (docs, videos, blogs) for this unit.'),
+  title: z
+    .string()
+    .describe("The title of the unit, which is a sub-topic within a module."),
+  objective: z
+    .string()
+    .describe(
+      "A clear, one-sentence learning objective for this unit. Example: 'Understand how Docker networking works'",
+    ),
+  summary: z
+    .string()
+    .describe(
+      "A mini AI-generated summary or concept breakdown for the unit's topic.",
+    ),
+  task: z
+    .string()
+    .describe(
+      "A hands-on task or quiz to test understanding. Example: 'Run your first container and expose a port.'",
+    ),
+  resources: z
+    .array(RoadmapResourceSchema)
+    .describe(
+      "A list of curated learning resources (docs, videos, blogs) for this unit.",
+    ),
 });
 export type RoadmapUnit = z.infer<typeof RoadmapUnitSchema>;
 
-
 const RoadmapModuleSchema = z.object({
-    title: z.string().describe('The title of the module, which is a major topic in the roadmap.'),
-    description: z.string().optional().describe('A brief, one-sentence description of what this module covers.'),
-    units: z.array(RoadmapUnitSchema).describe('A list of units within this module.'),
+  title: z
+    .string()
+    .describe(
+      "The title of the module, which is a major topic in the roadmap.",
+    ),
+  description: z
+    .string()
+    .optional()
+    .describe("A brief, one-sentence description of what this module covers."),
+  units: z
+    .array(RoadmapUnitSchema)
+    .describe("A list of units within this module."),
 });
 export type RoadmapModule = z.infer<typeof RoadmapModuleSchema>;
 
 const GenerateRoadmapOutputSchema = z.object({
-  title: z.string().describe('The main title of the generated learning roadmap.'),
-  description: z.string().describe('A short, encouraging description of the roadmap and what the user will learn.'),
-  prerequisites: z.array(z.string()).optional().describe('A list of prerequisite skills or topics the user should be familiar with.'),
-  modules: z.array(RoadmapModuleSchema).describe('The list of modules that make up the core of the roadmap.'),
-  relatedRoadmaps: z.array(z.string()).optional().describe('A list of suggestions for other related skills or roadmaps the user might want to explore next.'),
+  title: z
+    .string()
+    .describe("The main title of the generated learning roadmap."),
+  description: z
+    .string()
+    .describe(
+      "A short, encouraging description of the roadmap and what the user will learn.",
+    ),
+  prerequisites: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "A list of prerequisite skills or topics the user should be familiar with.",
+    ),
+  modules: z
+    .array(RoadmapModuleSchema)
+    .describe("The list of modules that make up the core of the roadmap."),
+  relatedRoadmaps: z
+    .array(z.string())
+    .optional()
+    .describe(
+      "A list of suggestions for other related skills or roadmaps the user might want to explore next.",
+    ),
 });
 export type GenerateRoadmapOutput = z.infer<typeof GenerateRoadmapOutputSchema>;
 
-
-export async function generateRoadmap(input: GenerateRoadmapInput): Promise<GenerateRoadmapOutput> {
+export async function generateRoadmap(
+  input: GenerateRoadmapInput,
+): Promise<GenerateRoadmapOutput> {
   return generateRoadmapFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateRoadmapPrompt',
-  input: {schema: GenerateRoadmapInputSchema},
-  output: {schema: GenerateRoadmapOutputSchema},
+  name: "generateRoadmapPrompt",
+  input: { schema: GenerateRoadmapInputSchema },
+  output: { schema: GenerateRoadmapOutputSchema },
   prompt: `You are an expert learning roadmap generator, inspired by the detailed and structured guides on roadmap.sh. Your task is to create a comprehensive, modular, and personalized learning roadmap based on the user's input. The roadmap must be highly structured and provide a clear, actionable path for the user.
 
 **User Input:**
@@ -99,12 +165,12 @@ The final output must be a single, valid JSON object matching the defined schema
 
 const generateRoadmapFlow = ai.defineFlow(
   {
-    name: 'generateRoadmapFlow',
+    name: "generateRoadmapFlow",
     inputSchema: GenerateRoadmapInputSchema,
     outputSchema: GenerateRoadmapOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const { output } = await prompt(input);
     return output!;
-  }
+  },
 );

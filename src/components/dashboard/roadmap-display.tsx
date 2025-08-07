@@ -190,7 +190,7 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
   const handleToggleResource = (
     moduleIndex: number,
     unitIndex: number,
-    resourceIndex: number
+    resourceIndex: number,
   ) => {
     setModules((prevModules) => {
       const newModules = JSON.parse(JSON.stringify(prevModules)); // Deep copy
@@ -307,7 +307,7 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
                 type="multiple"
                 className="w-full"
                 defaultValue={(module.units || []).map(
-                  (_, u) => `unit-${mIndex}-${u}`
+                  (_, u) => `unit-${mIndex}-${u}`,
                 )}
               >
                 {(module.units || []).map((unit, uIndex) => (
@@ -375,7 +375,7 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
                               <div className="flex items-center gap-2 font-medium">
                                 {getIconForResource(
                                   resource.title,
-                                  resource.url
+                                  resource.url,
                                 )}
                                 <span
                                   className={

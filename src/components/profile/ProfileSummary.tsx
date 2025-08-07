@@ -1,7 +1,7 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Book, Star, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Book, Star, User } from "lucide-react";
 
 export function ProfileSummary({ user, stats }: { user: any; stats: any }) {
   return (
@@ -16,7 +16,9 @@ export function ProfileSummary({ user, stats }: { user: any; stats: any }) {
       <p className="text-muted-foreground text-sm">{user.email}</p>
       <div className="flex flex-wrap gap-2 justify-center">
         {user.skills.slice(0, 4).map((skill: string, i: number) => (
-          <Badge key={i} variant="default">{skill}</Badge>
+          <Badge key={i} variant="default">
+            {skill}
+          </Badge>
         ))}
       </div>
       <div className="flex gap-4 mt-2">
@@ -27,7 +29,9 @@ export function ProfileSummary({ user, stats }: { user: any; stats: any }) {
         </div>
         <div className="flex flex-col items-center">
           <Star className="h-5 w-5 text-primary" />
-          <span className="font-semibold text-lg">{stats.modulesCompleted}</span>
+          <span className="font-semibold text-lg">
+            {stats.modulesCompleted}
+          </span>
           <span className="text-xs text-muted-foreground">Modules</span>
         </div>
         <div className="flex flex-col items-center">
@@ -36,7 +40,9 @@ export function ProfileSummary({ user, stats }: { user: any; stats: any }) {
           <span className="text-xs text-muted-foreground">Rank</span>
         </div>
       </div>
-      <Button variant="outline" size="sm" className="mt-4">Edit Profile</Button>
+      <Button variant="outline" size="sm" className="mt-4">
+        Edit Profile
+      </Button>
     </div>
   );
 }

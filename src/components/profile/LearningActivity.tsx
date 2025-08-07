@@ -1,6 +1,22 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  BarChart as RechartsBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
 
 export function LearningActivity({ activity }: { activity: any[] }) {
   return (
@@ -13,8 +29,8 @@ export function LearningActivity({ activity }: { activity: any[] }) {
         <ChartContainer
           config={{
             modules: {
-              label: 'Modules',
-              color: 'hsl(var(--chart-1))',
+              label: "Modules",
+              color: "hsl(var(--chart-1))",
             },
           }}
           className="h-64 w-full"
@@ -25,10 +41,22 @@ export function LearningActivity({ activity }: { activity: any[] }) {
             accessibilityLayer
           >
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              tickMargin={10}
+              axisLine={false}
+            />
             <YAxis tickLine={false} axisLine={false} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-            <Bar dataKey="modules" fill="var(--color-modules)" radius={[4, 4, 0, 0]} />
+            <ChartTooltip
+              cursor={false}
+              content={<ChartTooltipContent indicator="dot" />}
+            />
+            <Bar
+              dataKey="modules"
+              fill="var(--color-modules)"
+              radius={[4, 4, 0, 0]}
+            />
           </RechartsBarChart>
         </ChartContainer>
       </CardContent>

@@ -1,5 +1,5 @@
-import { AppLogo } from '@/components/common/AppLogo';
-import Link from 'next/link';
+import { AppLogo } from "@/components/common/AppLogo";
+import Link from "next/link";
 
 export function HomeHero() {
   return (
@@ -9,7 +9,8 @@ export function HomeHero() {
         Personalized AI Learning Roadmaps
       </h1>
       <p className="text-lg md:text-xl text-gray-700 dark:text-gray-200 mb-8 max-w-2xl mx-auto">
-        Unlock your potential with tailored learning paths, smart tutoring, and actionable resources powered by AI.
+        Unlock your potential with tailored learning paths, smart tutoring, and
+        actionable resources powered by AI.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Link href="/roadmaps">

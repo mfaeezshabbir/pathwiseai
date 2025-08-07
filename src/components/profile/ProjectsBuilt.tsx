@@ -1,9 +1,15 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Github } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import React from 'react';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Github } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import React from "react";
 
 export function ProjectsBuilt({ projects }: { projects: any[] }) {
   return (
@@ -15,7 +21,9 @@ export function ProjectsBuilt({ projects }: { projects: any[] }) {
       <CardContent className="space-y-6">
         {projects.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No projects built yet. Start learning to build something amazing!</p>
+            <p>
+              No projects built yet. Start learning to build something amazing!
+            </p>
           </div>
         )}
         {projects.map((project, index) => (
@@ -26,17 +34,25 @@ export function ProjectsBuilt({ projects }: { projects: any[] }) {
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-lg">{project.title}</h3>
                   {project.repoUrl && (
-                    <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
+                    <a
+                      href={project.repoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <Button variant="outline" size="sm">
                         <Github className="mr-2 h-4 w-4" /> View on GitHub
                       </Button>
                     </a>
                   )}
                 </div>
-                <p className="text-muted-foreground mt-1">{project.description}</p>
+                <p className="text-muted-foreground mt-1">
+                  {project.description}
+                </p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {project.techStack.map((tech: string) => (
-                    <Badge key={tech} variant="secondary">{tech}</Badge>
+                    <Badge key={tech} variant="secondary">
+                      {tech}
+                    </Badge>
                   ))}
                 </div>
               </div>
