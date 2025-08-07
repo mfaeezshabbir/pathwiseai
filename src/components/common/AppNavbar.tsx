@@ -25,10 +25,10 @@ const navLinks = [
 function ProfileAvatar() {
   // Replace with user image if available
   return (
-    <Link href="/profile" className="ml-2">
-      <span className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800">
+    <Link href="/profile">
+      <Button variant="outline" size="icon">
         <User />
-      </span>
+      </Button>
     </Link>
   );
 }
