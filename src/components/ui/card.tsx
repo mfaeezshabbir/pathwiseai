@@ -22,10 +22,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow duration-300",
-        hoverable && "hover:shadow-lg",
+        // Glassmorphic card style
+        "rounded-2xl border border-white/30 dark:border-indigo-900/40 bg-white/40 dark:bg-[#23272f]/40 backdrop-blur-lg shadow-xl transition-all duration-300",
+        hoverable &&
+          "hover:shadow-2xl hover:scale-[1.001] hover:-translate-y-0.5",
         clickable && "cursor-pointer",
-        compact ? "p-2" : "",
+        compact ? "p-2" : "p-6",
         className,
       )}
       tabIndex={clickable ? 0 : undefined}
@@ -63,7 +65,7 @@ const CardTitle = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "text-2xl font-bold leading-tight tracking-tight text-indigo-700 dark:text-indigo-200 drop-shadow-sm",
       className,
     )}
     {...props}
@@ -77,7 +79,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-base text-muted-foreground/90", className)}
     {...props}
   />
 ));

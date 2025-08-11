@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function HomeHero() {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[70vh] py-12 sm:py-20 px-4 sm:px-6 text-center bg-gradient-to-br from-indigo-200 via-white to-cyan-200 dark:from-[#1a1d23] dark:via-[#18181b] dark:to-[#1a1d23] border-b-4 border-indigo-300 dark:border-indigo-800 shadow-2xl rounded-2xl sm:rounded-3xl mb-8 sm:mb-14 overflow-hidden">
+    <section className="relative flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[70vh] py-12 sm:py-20 px-4 sm:px-6 text-center glass-card border-b-4 border-indigo-300 dark:border-indigo-800 shadow-2xl rounded-2xl sm:rounded-3xl mb-8 sm:mb-14 overflow-hidden">
       {/* Decorative glowing background elements */}
       <div className="absolute top-[-60px] left-[-60px] w-40 h-40 sm:w-72 sm:h-72 bg-indigo-400 opacity-30 rounded-full blur-2xl sm:blur-3xl pointer-events-none" />
       <div className="absolute bottom-[-40px] right-[-40px] w-56 h-56 sm:w-96 sm:h-96 bg-cyan-400 opacity-20 rounded-full blur-2xl sm:blur-3xl pointer-events-none" />
@@ -18,12 +18,12 @@ export function HomeHero() {
       </p>
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center w-full max-w-xs sm:max-w-none mx-auto">
         <Link href="/roadmaps" className="w-full sm:w-auto">
-          <button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 via-fuchsia-500 to-cyan-500 hover:from-indigo-700 hover:to-cyan-600 text-white font-bold px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-lg transition-all text-lg sm:text-xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300">
+          <button className="w-full sm:w-auto glass-card bg-gradient-to-r from-indigo-600 via-fuchsia-500 to-cyan-500 hover:from-indigo-700 hover:to-cyan-600 text-white font-bold px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-lg transition-all text-lg sm:text-xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-indigo-300">
             🚀 View My Roadmaps
           </button>
         </Link>
         <Link href="/profile" className="w-full sm:w-auto">
-          <button className="w-full sm:w-auto bg-white dark:bg-[#23272f] border-2 border-indigo-400 dark:border-indigo-300 text-indigo-700 dark:text-indigo-200 font-bold px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-lg transition-all text-lg sm:text-xl hover:bg-indigo-50 dark:hover:bg-indigo-900 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-200">
+          <button className="w-full sm:w-auto glass-card bg-white/30 dark:bg-[#23272f]/30 border-2 border-indigo-400 dark:border-indigo-300 text-indigo-700 dark:text-indigo-200 font-bold px-6 sm:px-10 py-3 sm:py-4 rounded-xl shadow-lg transition-all text-lg sm:text-xl hover:bg-indigo-50 dark:hover:bg-indigo-900 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-cyan-200">
             👤 Go to Profile
           </button>
         </Link>

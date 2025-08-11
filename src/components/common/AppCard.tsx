@@ -23,7 +23,7 @@ export function AppCard({
   contentClass?: string;
 }) {
   return (
-    <Card className={className}>
+    <Card className={`glass-card ${className}`}>
       {(title || description) && (
         <CardHeader className={headerClass}>
           {title && <CardTitle>{title}</CardTitle>}
