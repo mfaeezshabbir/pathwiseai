@@ -61,31 +61,31 @@ export function TestimonialsScroller() {
     <div className="mb-16">
       <div className="relative">
         {/* Gradients */}
-        <div className="absolute left-0 top-0 h-full w-8 pointer-events-none z-10" />
-        <div className="absolute right-10 top-0 h-full w-8 pointer-events-none z-10" />
+        <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-8" />
+        <div className="pointer-events-none absolute right-10 top-0 z-10 h-full w-8" />
         {/* Scroll Buttons */}
         <button
           aria-label="Scroll left"
           onClick={scrollLeft}
-          className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 dark:bg-[#23272f]/80 rounded-full p-1 shadow hover:bg-white"
+          className="absolute -left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1 shadow hover:bg-white dark:bg-[#23272f]/80"
         >
           <ChevronLeft size={24} />
         </button>
         <button
           aria-label="Scroll right"
           onClick={scrollRight}
-          className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 dark:bg-[#23272f]/80 rounded-full p-1 shadow hover:bg-white"
+          className="absolute -right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1 shadow hover:bg-white dark:bg-[#23272f]/80"
         >
           <ChevronRight size={24} />
         </button>
         {/* Scroller */}
         <div
           ref={scrollRef}
-          className="overflow-x-auto scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent"
+          className="scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent overflow-x-auto"
         >
-          <div className="flex gap-6 min-w-[600px] py-2 px-1">
+          <div className="flex min-w-[600px] gap-6 px-1 py-2">
             {testimonials.map((t, i) => (
-              <AppCard key={i} className="min-w-[320px] max-w-xs glass-card">
+              <AppCard key={i} className="glass-card min-w-[320px] max-w-xs">
                 <p className="italic">{`“${t.text}”`}</p>
                 <div className="mt-4 text-right font-semibold">
                   — {t.author}
