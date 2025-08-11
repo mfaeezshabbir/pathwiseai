@@ -1,5 +1,8 @@
+"use client";
+
 import { AppCard } from "@/components/common/AppCard";
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const testimonials = [
   {
@@ -21,12 +24,65 @@ const testimonials = [
 ];
 
 export function TestimonialsScroller() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollIndex, setScrollIndex] = useState(0);
+
+  const cardWidth = 340; // min-w-[320px] + gap
+
+  // Scroll to the current index
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        left: scrollIndex * cardWidth,
+        behavior: "smooth",
+      });
+    }
+  }, [scrollIndex]);
+
+  // Auto-scroll every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setScrollIndex((prev) =>
+        prev >= testimonials.length - 1 ? 0 : prev + 1,
+      );
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const scrollLeft = () => {
+    setScrollIndex((prev) => (prev <= 0 ? testimonials.length - 1 : prev - 1));
+  };
+
+  const scrollRight = () => {
+    setScrollIndex((prev) => (prev >= testimonials.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="mb-16">
       <div className="relative">
-        <div className="absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white/80 dark:from-[#23272f]/80 to-transparent pointer-events-none z-10" />
-        <div className="absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white/80 dark:from-[#23272f]/80 to-transparent pointer-events-none z-10" />
-        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent">
+        {/* Gradients */}
+        <div className="absolute left-0 top-0 h-full w-8 pointer-events-none z-10" />
+        <div className="absolute right-10 top-0 h-full w-8 pointer-events-none z-10" />
+        {/* Scroll Buttons */}
+        <button
+          aria-label="Scroll left"
+          onClick={scrollLeft}
+          className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 dark:bg-[#23272f]/80 rounded-full p-1 shadow hover:bg-white"
+        >
+          <ChevronLeft size={24} />
+        </button>
+        <button
+          aria-label="Scroll right"
+          onClick={scrollRight}
+          className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 bg-white/80 dark:bg-[#23272f]/80 rounded-full p-1 shadow hover:bg-white"
+        >
+          <ChevronRight size={24} />
+        </button>
+        {/* Scroller */}
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent"
+        >
           <div className="flex gap-6 min-w-[600px] py-2 px-1">
             {testimonials.map((t, i) => (
               <AppCard key={i} className="min-w-[320px] max-w-xs glass-card">

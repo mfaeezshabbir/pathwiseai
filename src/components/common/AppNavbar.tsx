@@ -63,13 +63,13 @@ export function AppNavbar() {
   return (
     <>
       {/* Desktop Navbar */}
-      <header className="hidden md:flex items-center justify-between w-full h-16 bg-white/90 dark:bg-[#18181b]/90 border-b border-gray-200 dark:border-gray-800 shadow-lg z-30 fixed top-0 left-0 px-8">
-        <div className="flex items-center gap-3">
+      <header className="hidden md:flex items-center justify-between w-full h-16 bg-white dark:bg-[#020617] border-b border-gray-200 dark:border-gray-800 shadow-lg z-30 fixed top-0 left-0 px-8">
+        <Link href="/" className="flex items-center gap-2">
           <AppLogo size={40} className="h-10 w-10" />
           <span className="text-2xl font-extrabold tracking-tight">
             PathwiseAI
           </span>
-        </div>
+        </Link>
         {NavLinks}
         <div className="flex items-center gap-4">
           <span className="text-xs text-muted-foreground">
@@ -81,17 +81,17 @@ export function AppNavbar() {
       </header>
       {/* Mobile Navbar */}
       <div className="md:hidden">
-        <header className="flex items-center justify-between w-full h-16 bg-white/90 dark:bg-[#18181b]/90 border-b border-gray-200 dark:border-gray-800 shadow-lg z-30 fixed top-0 left-0 px-4">
-          <div className="flex items-center gap-3">
+        <header className="flex items-center justify-between w-full h-16 bg-white dark:bg-[#020617] border-b border-gray-200 dark:border-gray-800 shadow-lg z-30 fixed top-0 left-0 px-4">
+          <Link href="/" className="flex items-center gap-3">
             <AppLogo size={36} className="h-9 w-9" />
             <span className="text-xl font-extrabold tracking-tight">
               PathwiseAI
             </span>
-          </div>
+          </Link>
           <div className="flex items-center gap-2">
             <ProfileAvatar />
             <Button
-              className="bg-white dark:bg-[#18181b] rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-800"
+              className="bg-white dark:bg-[#020617] rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-800"
               onClick={() => setOpen(true)}
               aria-label="Open navigation"
             >
@@ -101,9 +101,9 @@ export function AppNavbar() {
         </header>
         {open && (
           <div className="fixed inset-0 z-50 flex flex-col">
-            <div className="flex flex-col w-full bg-white/95 dark:bg-[#18181b]/95 border-b border-gray-200 dark:border-gray-800 shadow-lg animate-slide-down relative">
+            <div className="flex flex-col w-full bg-white/95 dark:bg-[#020617]/95 border-b border-gray-200 dark:border-gray-800 shadow-lg animate-slide-down relative">
               <button
-                className="absolute top-4 right-4 z-50 bg-white dark:bg-[#18181b] rounded-full p-1 border border-gray-200 dark:border-gray-800"
+                className="absolute top-4 right-4 z-50 bg-white dark:bg-[#020617] rounded-full p-1 border border-gray-200 dark:border-gray-800"
                 onClick={() => setOpen(false)}
                 aria-label="Close navigation"
               >
