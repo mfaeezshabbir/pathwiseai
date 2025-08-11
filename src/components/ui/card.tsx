@@ -2,31 +2,58 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm hover:shadow-lg transition-shadow duration-300",
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  hoverable?: boolean;
+  clickable?: boolean;
+  compact?: boolean;
+}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  (
+    {
       className,
-    )}
-    {...props}
-  />
-));
+      hoverable = true,
+      clickable = false,
+      compact = false,
+      ...props
+    },
+    ref,
+  ) => (
+    <div
+      ref={ref}
+      className={cn(
+        "rounded-lg border bg-card text-card-foreground shadow-sm transition-shadow duration-300",
+        hoverable && "hover:shadow-lg",
+        clickable && "cursor-pointer",
+        compact ? "p-2" : "",
+        className,
+      )}
+      tabIndex={clickable ? 0 : undefined}
+      {...props}
+    />
+  ),
+);
 Card.displayName = "Card";
 
-const CardHeader = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props}
-  />
-));
+interface CardHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  noPadding?: boolean;
+  align?: "left" | "center" | "right";
+}
+const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ className, noPadding = false, align = "left", ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "flex flex-col space-y-1.5",
+        noPadding ? "p-0" : "p-6",
+        align === "center" && "items-center text-center",
+        align === "right" && "items-end text-right",
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<
@@ -56,24 +83,39 @@ const CardDescription = React.forwardRef<
 ));
 CardDescription.displayName = "CardDescription";
 
-const CardContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-));
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  noPadding?: boolean;
+}
+const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
+  ({ className, noPadding = false, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(noPadding ? "p-0" : "p-6 pt-0", className)}
+      {...props}
+    />
+  ),
+);
 CardContent.displayName = "CardContent";
 
-const CardFooter = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props}
-  />
-));
+interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  noPadding?: boolean;
+  align?: "left" | "center" | "right";
+}
+const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
+  ({ className, noPadding = false, align = "left", ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "flex items-center",
+        noPadding ? "p-0" : "p-6 pt-0",
+        align === "center" && "justify-center text-center",
+        align === "right" && "justify-end text-right",
+        className,
+      )}
+      {...props}
+    />
+  ),
+);
 CardFooter.displayName = "CardFooter";
 
 export {

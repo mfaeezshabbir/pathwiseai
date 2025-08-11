@@ -23,7 +23,7 @@ export default function RoadmapsPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4 md:px-8 space-y-12">
+    <div className="mx-auto py-10 px-4 md:px-8 space-y-12">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-extrabold tracking-tight mb-2 text-indigo-700 dark:text-indigo-300">

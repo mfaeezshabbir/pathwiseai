@@ -25,7 +25,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-body antialiased min-h-screen bg-gradient-to-tr from-[#e0e7ff] via-white to-[#f0fdfa] dark:from-[#18181b] dark:via-[#23272f] dark:to-[#18181b] text-gray-900 dark:text-gray-100 flex flex-col">
+      <body className="font-body antialiased min-h-screen bg-gradient-to-tr from-[#e0e7ff] via-white to-[#f0fdfa] dark:from-[#18181b] dark:via-[#23272f] dark:to-[#18181b] text-gray-900 dark:text-gray-100 flex flex-col max-w-[90%] mx-auto">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -36,7 +36,7 @@ export default function RootLayout({
           <AppNavbar />
 
           {/* Main Content */}
-          <main className="flex-1 w-full max-w-5xl mx-auto px-4 md:px-12 py-10">
+          <main className="flex-1 w-full max-w-full mx-auto px-4 md:px-12 py-10">
             {children}
           </main>
 
