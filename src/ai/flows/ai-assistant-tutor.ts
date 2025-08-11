@@ -85,7 +85,7 @@ const aiAssistantTutorFlow = ai.defineFlow(
     return {
       answer: [
         {
-          type: "text",
+          type: "text" as const,
           text: "An unexpected error occurred. Please try again.",
         },
       ],

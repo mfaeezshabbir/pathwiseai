@@ -5,15 +5,15 @@ import { AppLogo } from "./AppLogo";
 
 export function AppFooter() {
   return (
-    <footer className="w-full z-50 px-4 md:px-12 py-10 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-[#020617] text-sm text-muted-foreground">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <footer className="z-0 w-full border-t border-gray-200 bg-white px-4 py-10 text-sm text-muted-foreground dark:border-gray-800 dark:bg-[#020617] md:px-12">
+      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 md:flex-row">
         <div className="flex items-center gap-2">
           <AppLogo size={28} className="h-8 w-8" />
           <span className="font-semibold text-gray-900 dark:text-white">
             PathwiseAI
           </span>
         </div>
-        <nav className="flex flex-wrap gap-6 justify-center md:justify-end">
+        <nav className="flex flex-wrap justify-center gap-6 md:justify-end">
           <Link href="/" className="hover:underline">
             Home
           </Link>
@@ -31,7 +31,7 @@ export function AppFooter() {
           </Link>
         </nav>
       </div>
-      <div className="max-w-7xl mx-auto mt-6 flex flex-col md:flex-row items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-700 pt-4">
+      <div className="mx-auto mt-6 flex max-w-7xl flex-col items-center justify-between gap-2 border-t border-gray-100 pt-4 dark:border-gray-700 md:flex-row">
         <span>
           &copy; {new Date().getFullYear()} PathwiseAI. All rights reserved.
         </span>

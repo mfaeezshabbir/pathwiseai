@@ -29,7 +29,7 @@ export const suggestRoadmapTool = ai.defineTool(
     // for the frontend so it can render a "Generate Roadmap" button.
     // The LLM's prompt is configured to use the output of this tool.
     return {
-      type: "roadmapSuggestion",
+      type: "roadmapSuggestion" as const,
       suggestion: input.suggestion,
     };
   },

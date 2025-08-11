@@ -39,8 +39,8 @@ Follow these instructions to get a copy of the project up and running on your lo
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/mfaeezshabbir/pathwise-ai.git
-    cd pathwise-ai
+    git clone https://github.com/mfaeezshabbir/pathwiseai.git
+    cd pathwiseai
     ```
 
 2.  **Install dependencies:**

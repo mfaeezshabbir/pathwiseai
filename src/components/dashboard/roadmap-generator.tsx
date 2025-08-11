@@ -6,23 +6,6 @@ import { z } from "zod";
 import { Loader2, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -32,7 +15,7 @@ import {
 import { generateRoadmap } from "@/ai/flows/generate-roadmap";
 import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { toast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   desiredSkill: z.string().min(2, {
@@ -69,170 +52,196 @@ export function RoadmapGenerator({
     },
   });
 
+  const [step, setStep] = useState(1);
+  const [topic, setTopic] = useState("");
+  const [goal, setGoal] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (initialSkill) {
       form.setValue("desiredSkill", initialSkill);
     }
   }, [initialSkill]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const handleNext = () => {
+    if (step === 1 && !topic.trim()) {
+      setError("Please enter a topic.");
+      return;
+    }
+    if (step === 2 && !goal.trim()) {
+      setError("Please enter your learning goal.");
+      return;
+    }
+    setError(null);
+    setStep(step + 1);
+  };
+
+  const handleBack = () => setStep(step - 1);
+
+  const handleGenerate = async () => {
     setIsLoading(true);
+    setError(null);
     try {
+      const values = {
+        desiredSkill: topic,
+        knowledgeLevel: "beginner",
+        availableTime: "5",
+        learningStyle: "any",
+      };
       const roadmapData = await generateRoadmap(values);
       onRoadmapGenerated(roadmapData);
-    } catch (error) {
-      console.error("Failed to generate roadmap:", error);
-      toast({
-        title: "Error Generating Roadmap",
-        description: "There was an issue with the AI. Please try again.",
-        variant: "destructive",
-      });
+    } catch (e) {
+      setError("Failed to generate roadmap. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <Card className="max-w-3xl mx-auto border-2 border-primary/20 shadow-xl">
-      <CardHeader className="text-center">
-        <Rocket className="mx-auto h-12 w-12 text-primary mb-4 p-2 bg-primary/10 rounded-full" />
-        <CardTitle className="text-3xl font-extrabold tracking-tight">
-          Create Your Learning Path
-        </CardTitle>
-        <CardDescription className="text-lg">
-          Tell us your goals, and we'll generate a personalized roadmap for you.
-        </CardDescription>
+    <div className="mx-auto max-w-xl bg-transparent">
+      <CardHeader className="pb-2 text-center">
+        <div className="flex flex-col items-center">
+          <CardTitle className="mb-1 text-2xl font-bold tracking-tight">
+            Create Your Learning Path
+          </CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            Tell us your goals, and we'll generate a personalized roadmap for
+            you.
+          </CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <FormField
-              control={form.control}
-              name="desiredSkill"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base">
-                    What do you want to learn?
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., Advanced React, Python for Data Science"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Be specific for the best results.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <FormField
-                control={form.control}
-                name="knowledgeLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Knowledge Level</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="beginner">Beginner</SelectItem>
-                        <SelectItem value="intermediate">
-                          Intermediate
-                        </SelectItem>
-                        <SelectItem value="advanced">Advanced</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+        <div>
+          {/* Stepper */}
+          <div className="mb-8 flex items-center justify-center gap-4">
+            {[1, 2, 3].map((n, i) => (
+              <div key={n} className="flex items-center">
+                <div
+                  className={`flex h-8 w-8 items-center justify-center rounded-full font-semibold transition-colors duration-200 ${
+                    step >= n
+                      ? "bg-indigo-600 text-white shadow"
+                      : "bg-gray-200 text-gray-400 dark:bg-gray-700"
+                  }`}
+                >
+                  {n}
+                </div>
+                {i < 2 && (
+                  <div
+                    className={`mx-1 h-1 w-8 rounded transition-colors duration-200 ${
+                      step > n
+                        ? "bg-indigo-600"
+                        : "bg-gray-200 dark:bg-gray-700"
+                    }`}
+                  />
                 )}
-              />
-              <FormField
-                control={form.control}
-                name="availableTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Time per week</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select time" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="< 5 hours">&lt; 5 hours</SelectItem>
-                        <SelectItem value="5-10 hours">5-10 hours</SelectItem>
-                        <SelectItem value="10+ hours">10+ hours</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="learningStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Learning Style</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select style" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="video-first">Video-First</SelectItem>
-                        <SelectItem value="hands-on coding">
-                          Hands-on Coding
-                        </SelectItem>
-                        <SelectItem value="theory">Theory-focused</SelectItem>
-                        <SelectItem value="project-based">
-                          Project-Based
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              </div>
+            ))}
+          </div>
+          {/* Error */}
+          {error && (
+            <div className="mb-4 rounded border border-red-300 bg-red-50 px-4 py-2 text-red-700 dark:border-red-800 dark:bg-red-900 dark:text-red-200">
+              {error}
             </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              size="lg"
-              className="w-full"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Rocket className="mr-2 h-4 w-4" />
-                  Generate My Roadmap
-                </>
-              )}
-            </Button>
-          </form>
-        </Form>
+          )}
+          {/* Step 1 */}
+          {step === 1 && (
+            <div>
+              <label className="mb-2 block font-medium text-gray-800 dark:text-gray-200">
+                What topic do you want a roadmap for?
+              </label>
+              <input
+                className="mb-6 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-[#232336] dark:text-gray-100"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="e.g. React, Data Science, UI/UX Design"
+                disabled={isLoading}
+              />
+              <div className="flex justify-end">
+                <Button
+                  className="px-8 py-2 text-base font-semibold"
+                  onClick={handleNext}
+                  disabled={isLoading}
+                  variant="default"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {/* Step 2 */}
+          {step === 2 && (
+            <div>
+              <label className="mb-2 block font-medium text-gray-800 dark:text-gray-200">
+                What is your learning goal?
+              </label>
+              <input
+                className="mb-6 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-base shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:border-gray-700 dark:bg-[#232336] dark:text-gray-100"
+                value={goal}
+                onChange={(e) => setGoal(e.target.value)}
+                placeholder="e.g. Become job-ready, build a project, master the basics"
+                disabled={isLoading}
+              />
+              <div className="flex justify-between">
+                <Button
+                  className="px-8 py-2 text-base font-semibold"
+                  onClick={handleBack}
+                  disabled={isLoading}
+                  variant="secondary"
+                >
+                  Back
+                </Button>
+                <Button
+                  className="px-8 py-2 text-base font-semibold"
+                  onClick={handleNext}
+                  disabled={isLoading}
+                  variant="default"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+          {/* Step 3 */}
+          {step === 3 && (
+            <div>
+              <div className="mb-6 rounded-lg bg-gray-50 p-4 text-sm text-gray-700 dark:bg-[#232336] dark:text-gray-200">
+                <div className="mb-1 font-semibold text-gray-900 dark:text-gray-100">
+                  Review
+                </div>
+                <div>
+                  <span className="font-medium">Topic:</span> {topic}
+                  <br />
+                  <span className="font-medium">Goal:</span> {goal}
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <Button
+                  className="px-8 py-2 text-base font-semibold"
+                  onClick={handleBack}
+                  disabled={isLoading}
+                  variant="secondary"
+                >
+                  Back
+                </Button>
+                <Button
+                  className="px-8 py-2 text-base font-semibold"
+                  onClick={handleGenerate}
+                  disabled={isLoading}
+                  variant="default"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Generating...
+                    </span>
+                  ) : (
+                    "Generate Roadmap"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </CardContent>
-    </Card>
+    </div>
   );
 }
