@@ -14,11 +14,18 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 
+interface NavLink {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  featured?: boolean;
+}
+
 // Remove Profile from navLinks
-const navLinks = [
+const navLinks: NavLink[] = [
   { name: "Home", href: "/", icon: HomeIcon },
+  { name: "Roadmaps", href: "/roadmaps", icon: BookOpenIcon, featured: true },
   { name: "About", href: "/about", icon: InfoIcon },
-  { name: "Roadmaps", href: "/roadmaps", icon: BookOpenIcon },
 ];
 
 // Profile avatar component
@@ -38,22 +45,36 @@ export function AppNavbar() {
   const [open, setOpen] = useState(false);
 
   const NavLinks = (
-    <nav className="flex flex-col md:flex-row gap-2 md:gap-4">
+    <nav className="flex flex-col gap-2 md:flex-row md:gap-4">
       {navLinks.map((link) => {
         const Icon = link.icon;
+        const isActive = pathname === link.href;
+        const isFeatured = link.featured;
+
         return (
           <Link
             key={link.name}
             href={link.href}
-            className={`flex items-center gap-2 rounded-lg px-3 py-2 text-base font-medium transition-colors text-gray-700 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-[#23272f] ${
-              pathname === link.href
-                ? "bg-indigo-100 dark:bg-[#23272f] font-bold"
-                : ""
+            className={`relative flex items-center gap-2 rounded-lg px-3 py-2 text-base font-medium transition-all duration-300 ${
+              isActive
+                ? isFeatured
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg"
+                  : "bg-indigo-100 font-bold text-gray-900 dark:bg-[#23272f] dark:text-gray-100"
+                : isFeatured
+                  ? "border border-indigo-200 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 hover:from-indigo-200 hover:to-purple-200 dark:border-indigo-700 dark:from-indigo-900/30 dark:to-purple-900/30 dark:text-indigo-300 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50"
+                  : "text-gray-700 hover:bg-indigo-100 dark:text-gray-200 dark:hover:bg-[#23272f]"
             }`}
             onClick={() => setOpen(false)}
           >
-            <Icon className="h-5 w-5" />
+            <Icon
+              className={`h-5 w-5 ${isFeatured && !isActive ? "text-indigo-600 dark:text-indigo-400" : ""}`}
+            />
             {link.name}
+            {isFeatured && (
+              <span className="rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 px-1.5 py-0.5 text-xs font-bold text-white">
+                NEW
+              </span>
+            )}
           </Link>
         );
       })}
@@ -63,7 +84,7 @@ export function AppNavbar() {
   return (
     <>
       {/* Desktop Navbar */}
-      <header className="hidden md:flex items-center justify-between w-full h-16 bg-white dark:bg-[#020617] border-b border-gray-200 dark:border-gray-800 shadow-lg z-30 fixed top-0 left-0 px-8">
+      <header className="fixed left-0 top-0 z-30 hidden h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-8 shadow-lg dark:border-gray-800 dark:bg-[#020617] md:flex">
         <Link href="/" className="flex items-center gap-2">
           <AppLogo size={40} className="h-10 w-10" />
           <span className="text-2xl font-extrabold tracking-tight">
@@ -81,7 +102,7 @@ export function AppNavbar() {
       </header>
       {/* Mobile Navbar */}
       <div className="md:hidden">
-        <header className="flex items-center justify-between w-full h-16 bg-white dark:bg-[#020617] border-b border-gray-200 dark:border-gray-800 shadow-lg z-30 fixed top-0 left-0 px-4">
+        <header className="fixed left-0 top-0 z-30 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-4 shadow-lg dark:border-gray-800 dark:bg-[#020617]">
           <Link href="/" className="flex items-center gap-3">
             <AppLogo size={36} className="h-9 w-9" />
             <span className="text-xl font-extrabold tracking-tight">
@@ -91,7 +112,7 @@ export function AppNavbar() {
           <div className="flex items-center gap-2">
             <ProfileAvatar />
             <Button
-              className="bg-white dark:bg-[#020617] rounded-full p-2 shadow-md border border-gray-200 dark:border-gray-800"
+              className="rounded-full border border-gray-200 bg-white p-2 shadow-md dark:border-gray-800 dark:bg-[#020617]"
               onClick={() => setOpen(true)}
               aria-label="Open navigation"
             >
@@ -101,17 +122,17 @@ export function AppNavbar() {
         </header>
         {open && (
           <div className="fixed inset-0 z-50 flex flex-col">
-            <div className="flex flex-col w-full bg-white/95 dark:bg-[#020617]/95 border-b border-gray-200 dark:border-gray-800 shadow-lg animate-slide-down relative">
+            <div className="animate-slide-down relative flex w-full flex-col border-b border-gray-200 bg-white/95 shadow-lg dark:border-gray-800 dark:bg-[#020617]/95">
               <button
-                className="absolute top-4 right-4 z-50 bg-white dark:bg-[#020617] rounded-full p-1 border border-gray-200 dark:border-gray-800"
+                className="absolute right-4 top-4 z-50 rounded-full border border-gray-200 bg-white p-1 dark:border-gray-800 dark:bg-[#020617]"
                 onClick={() => setOpen(false)}
                 aria-label="Close navigation"
               >
                 <SidebarCloseIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
               </button>
-              <div className="flex flex-col gap-4 px-6 py-6 mt-8">
+              <div className="mt-8 flex flex-col gap-4 px-6 py-6">
                 {NavLinks}
-                <div className="flex items-center justify-between mt-4">
+                <div className="mt-4 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
                     AI-powered learning
                   </span>
