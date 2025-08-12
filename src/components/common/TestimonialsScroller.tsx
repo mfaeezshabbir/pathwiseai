@@ -21,13 +21,17 @@ const testimonials = [
     text: "Tracking my progress and earning badges keeps me motivated. Highly recommend!",
     author: "Emily, Product Manager",
   },
+  {
+    text: "PathwiseAI transformed my learning experience. I can now focus on building projects that matter to me.",
+    author: "Jordan, Software Engineer",
+  },
 ];
 
 export function TestimonialsScroller() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrollIndex, setScrollIndex] = useState(0);
 
-  const cardWidth = 340; // min-w-[320px] + gap
+  const cardWidth = 360; // min-w-[340px] + gap
 
   // Scroll to the current index
   useEffect(() => {
@@ -39,13 +43,13 @@ export function TestimonialsScroller() {
     }
   }, [scrollIndex]);
 
-  // Auto-scroll every 4 seconds
+  // Auto-scroll every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setScrollIndex((prev) =>
         prev >= testimonials.length - 1 ? 0 : prev + 1,
       );
-    }, 4000);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
@@ -58,43 +62,66 @@ export function TestimonialsScroller() {
   };
 
   return (
-    <div className="mb-16">
+    <section className="relative mx-auto w-full px-4 py-12">
       <div className="relative">
-        {/* Gradients */}
-        <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-8" />
-        <div className="pointer-events-none absolute right-10 top-0 z-10 h-full w-8" />
+        {/* Gradient overlays for fade effect */}
+        <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-16 bg-gradient-to-r from-[#F0F4F8] via-[#F0F4F8]/80 to-transparent dark:from-gray-900 dark:via-gray-900/80" />
+        <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-[#F0F4F8] via-[#F0F4F8]/80 to-transparent dark:from-gray-900 dark:via-gray-900/80" />
         {/* Scroll Buttons */}
         <button
           aria-label="Scroll left"
           onClick={scrollLeft}
-          className="absolute -left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1 shadow hover:bg-white dark:bg-[#23272f]/80"
+          className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-lg ring-1 ring-[#3F51B5]/10 transition hover:bg-[#7E57C2]/90 hover:text-white dark:bg-[#23272f]/90"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={28} />
         </button>
         <button
           aria-label="Scroll right"
           onClick={scrollRight}
-          className="absolute -right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/80 p-1 shadow hover:bg-white dark:bg-[#23272f]/80"
+          className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/90 p-2 shadow-lg ring-1 ring-[#3F51B5]/10 transition hover:bg-[#7E57C2]/90 hover:text-white dark:bg-[#23272f]/90"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={28} />
         </button>
         {/* Scroller */}
         <div
           ref={scrollRef}
           className="scrollbar-thin scrollbar-thumb-indigo-300 scrollbar-track-transparent overflow-x-auto"
         >
-          <div className="flex min-w-[600px] gap-6 px-1 py-2">
+          <div className="flex gap-8 px-2 py-4 transition-all duration-300">
             {testimonials.map((t, i) => (
-              <AppCard key={i} className="glass-card min-w-[320px] max-w-xs">
-                <p className="italic">{`“${t.text}”`}</p>
-                <div className="mt-4 text-right font-semibold">
-                  — {t.author}
+              <AppCard
+                key={i}
+                className="min-w-[340px] max-w-xs border border-[#3F51B5]/10 bg-white/80 shadow-xl backdrop-blur-xl transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl dark:bg-gray-900/80"
+              >
+                <div className="flex h-full flex-col justify-between">
+                  <p className="font-inter text-lg italic leading-relaxed text-gray-800 dark:text-gray-100">
+                    “{t.text}”
+                  </p>
+                  <div className="mt-6 flex items-center justify-end gap-2">
+                    <span className="block h-2 w-2 rounded-full bg-[#00BCD4]" />
+                    <span className="font-inter text-sm font-semibold text-[#7E57C2]">
+                      {t.author}
+                    </span>
+                  </div>
                 </div>
               </AppCard>
             ))}
           </div>
         </div>
+        {/* Dots indicator */}
+        <div className="mt-6 flex justify-center gap-2">
+          {testimonials.map((_, i) => (
+            <span
+              key={i}
+              className={`h-2 w-6 rounded-full transition-all duration-300 ${
+                i === scrollIndex
+                  ? "bg-[#3F51B5] opacity-90"
+                  : "bg-[#3F51B5]/30 opacity-50"
+              }`}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

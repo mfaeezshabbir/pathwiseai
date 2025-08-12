@@ -10,13 +10,12 @@ export function HomeHero() {
       {/* Background decoration */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute left-1/4 top-1/4 h-72 w-72 rounded-full bg-indigo-300/20 blur-3xl"></div>
-        <div className="absolute right-1/4 top-3/4 h-96 w-96 rounded-full bg-purple-300/20 blur-3xl"></div>
+        <div className="absolute right-1/4 top-1/2 h-80 w-96 rounded-full bg-purple-300/20 blur-3xl"></div>
       </div>
 
       <div className="mx-auto flex max-w-4xl flex-col items-center">
-        {/* Logo and Badge */}
+        {/* Badge */}
         <div className="mb-8 flex flex-col items-center">
-          <AppLogo size={80} className="mb-6" />
           <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white">
             <Sparkles className="mr-2 h-4 w-4" />
             AI-Powered Learning Platform
