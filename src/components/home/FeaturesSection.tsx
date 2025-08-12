@@ -8,9 +8,9 @@ export function FeaturesSection() {
       <SectionHeader
         title="Why PathwiseAI?"
         description="Unlock your learning potential with these powerful features."
-        icon={<Sparkles className="h-8 w-8 text-indigo-400 animate-bounce" />}
+        icon={<Sparkles className="h-8 w-8 animate-bounce text-indigo-400" />}
       />
-      <div className="grid md:grid-cols-3 gap-8">
+      <div className="grid gap-8 md:grid-cols-3">
         <AppCard title="Personalized Roadmaps" className="glass-card">
           <p>
             Get AI-generated, step-by-step learning paths tailored to your

@@ -1,29 +1,35 @@
-import { User } from "lucide-react";
+import { AppCard } from "@/components/common/AppCard";
 
 export function DeveloperSection() {
   return (
-    <div className="relative flex flex-col items-center overflow-hidden rounded-3xl bg-gradient-to-r from-fuchsia-100/60 via-white/80 to-indigo-100/60 p-10 shadow-xl dark:from-gray-900/60 dark:via-gray-950/80 dark:to-indigo-900/60">
-      <div className="absolute -top-10 right-1/2 h-32 w-32 rounded-full bg-fuchsia-200/30 blur-2xl" />
-      <div className="absolute -bottom-10 left-1/2 h-32 w-32 rounded-full bg-indigo-200/30 blur-2xl" />
-      <div className="relative z-10 flex flex-col items-center text-center">
-        <h2 className="mb-2 bg-gradient-to-r from-fuchsia-500 to-indigo-600 bg-clip-text text-3xl font-bold text-transparent">
-          The Developer
-        </h2>
+    <AppCard
+      title="The Developer"
+      description="Founder & Solo Developer"
+      headerClass="items-center text-center"
+      contentClass="flex flex-col items-center text-center gap-4"
+    >
+      <div className="flex flex-col items-center">
         <img
           src="https://avatars.githubusercontent.com/u/74614920?v=4"
           alt="Developer Avatar"
-          className="mx-auto mb-4 h-28 w-28 rounded-full border-4 border-indigo-300 shadow-lg dark:border-indigo-700"
+          className="mx-auto mb-3 h-28 w-28 rounded-full border-4 border-indigo-400 shadow-xl transition-transform hover:scale-105 dark:border-indigo-700"
         />
-        <p className="text-lg font-semibold">M. Faeez Shabbir</p>
-        <p className="text-base text-muted-foreground">
-          Founder & Solo Developer
+        <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">
+          M. Faeez Shabbir
         </p>
-        <p className="text-md mx-auto mt-4 max-w-xl italic text-muted-foreground">
+        <p className="text-base font-medium text-indigo-500 dark:text-indigo-400">
+          Founder &amp; Solo Developer
+        </p>
+      </div>
+      <p className="text-md max-w-lg text-muted-foreground">
+        A passionate developer on a mission to make learning accessible and
+        engaging for everyone.
+        <blockquote className="mx-auto mt-2 max-w-xl italic text-muted-foreground">
           "I built PathwiseAI to solve my own learning struggles—fragmented
           resources, lack of structure, and no clear path. My goal is to empower
           others to learn efficiently and confidently."
-        </p>
-      </div>
-    </div>
+        </blockquote>{" "}
+      </p>
+    </AppCard>
   );
 }
