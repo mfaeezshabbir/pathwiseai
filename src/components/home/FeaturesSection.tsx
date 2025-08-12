@@ -29,7 +29,7 @@ export function FeaturesSection() {
 
       {/* Main Feature - Roadmaps */}
       <div className="mb-12">
-        <Card className="relative overflow-hidden border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:border-indigo-700 dark:from-indigo-950/30 dark:via-gray-900 dark:to-purple-950/30">
+        <Card className="relative overflow-hidden border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-purple-50 hover:translate-y-0 dark:border-indigo-700 dark:from-indigo-950/30 dark:via-gray-900 dark:to-purple-950/30">
           <div className="absolute right-4 top-4">
             <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white">
               ⭐ Main Feature
@@ -82,7 +82,7 @@ export function FeaturesSection() {
                 <Link href="/roadmaps">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                    className="mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                   >
                     <BookOpen className="mr-2 h-5 w-5" />
                     Create Your Roadmap

@@ -4,11 +4,12 @@ import { AppCard } from "@/components/common/AppCard";
 export function MissionSection() {
   return (
     <AppCard
-      title="Our Mission"
-      className="p-10"
       headerClass="items-center text-center"
       contentClass="flex flex-col items-center text-center"
     >
+      <h2 className="my-8 bg-gradient-to-r from-fuchsia-500 to-indigo-600 bg-clip-text text-center text-3xl font-bold text-transparent">
+        Our Mission
+      </h2>
       <p className="mb-2 max-w-2xl text-lg text-muted-foreground">
         PathwiseAI empowers learners of all backgrounds to achieve their goals
         through personalized, AI-generated learning roadmaps and hands-on

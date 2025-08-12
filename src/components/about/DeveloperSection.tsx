@@ -3,11 +3,12 @@ import { AppCard } from "@/components/common/AppCard";
 export function DeveloperSection() {
   return (
     <AppCard
-      title="The Developer"
-      description="Founder & Solo Developer"
       headerClass="items-center text-center"
       contentClass="flex flex-col items-center text-center gap-4"
     >
+      <h2 className="mt-8 bg-gradient-to-r from-fuchsia-500 to-indigo-600 bg-clip-text text-center text-3xl font-bold text-transparent">
+        Meet the Developer
+      </h2>
       <div className="flex flex-col items-center">
         <img
           src="https://avatars.githubusercontent.com/u/74614920?v=4"

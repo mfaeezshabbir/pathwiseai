@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import type {
   GenerateRoadmapOutput,
   RoadmapModule,
@@ -38,7 +38,6 @@ import {
   BookOpen,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { generateProjectIdeas } from "@/ai/flows/generate-project-ideas";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -49,7 +48,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ScrollArea } from "../ui/scroll-area";
+import ProjectIdeasGenerator from "@/components/roadmaps/display/ProjectIdeasGenerator";
+import {
+  getIconForResource,
+  calculateProgress,
+  calculateModuleProgress,
+  calculateUnitProgress,
+} from "@/components/roadmaps/display/utils";
 
 type RoadmapDisplayProps = {
   roadmap: GenerateRoadmapOutput;
@@ -64,100 +69,6 @@ type UnitWithState = Omit<RoadmapUnit, "resources"> & {
 type ModuleWithState = Omit<RoadmapModule, "units"> & {
   units: UnitWithState[];
 };
-
-const getIconForResource = (title: string, url?: string) => {
-  const lowerTitle = title.toLowerCase();
-  if (url?.includes("youtube.com") || url?.includes("youtu.be"))
-    return <Youtube className="h-4 w-4 text-red-600" />;
-  if (lowerTitle.includes("video"))
-    return <Youtube className="h-4 w-4 text-red-600" />;
-  if (
-    lowerTitle.includes("article") ||
-    lowerTitle.includes("blog") ||
-    lowerTitle.includes("docs")
-  )
-    return <FileText className="h-4 w-4 text-blue-600" />;
-  if (lowerTitle.includes("project") || lowerTitle.includes("build"))
-    return <Code className="h-4 w-4 text-green-600" />;
-  if (url) return <Globe className="h-4 w-4" />;
-  return <Book className="h-4 w-4" />;
-};
-
-function ProjectIdeasGenerator({
-  moduleTitle,
-  skills,
-}: {
-  moduleTitle: string;
-  skills: string[];
-}) {
-  const [ideas, setIdeas] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleGenerate = async () => {
-    setIsLoading(true);
-    try {
-      const result = await generateProjectIdeas({
-        skills,
-        roadmapName: moduleTitle,
-      });
-      setIdeas(result.projectIdeas);
-    } catch (error) {
-      toast({
-        title: "Error generating project ideas",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="secondary" size="sm">
-          <Code className="mr-2 h-4 w-4" /> Suggest Projects
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Project Ideas for: {moduleTitle}</AlertDialogTitle>
-          <AlertDialogDescription>
-            Based on the skills in this module, here are some project ideas to
-            practice what you've learned.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <ScrollArea className="h-60">
-          <div className="space-y-2 p-4">
-            {ideas.length > 0 ? (
-              <ul className="list-disc space-y-2 pl-5">
-                {ideas.map((idea, i) => (
-                  <li key={i}>{idea}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-center text-muted-foreground">
-                Click "Generate" to get project ideas.
-              </p>
-            )}
-            {isLoading && (
-              <p className="text-center text-muted-foreground">Generating...</p>
-            )}
-          </div>
-        </ScrollArea>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Close</AlertDialogCancel>
-          <Button onClick={handleGenerate} disabled={isLoading}>
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />{" "}
-            Generate
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-}
 
 export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
   const [modules, setModules] = useState<ModuleWithState[]>([]);
@@ -203,25 +114,8 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
     });
   };
 
-  const { progress, completedResources, totalResources } = useMemo(() => {
-    if (!modules)
-      return { progress: 0, completedResources: 0, totalResources: 0 };
-    let completed = 0;
-    let total = 0;
-    modules.forEach((module) => {
-      (module.units || []).forEach((unit) => {
-        total += (unit.resources || []).length;
-        (unit.resources || []).forEach((resource) => {
-          if (resource.completed) completed++;
-        });
-      });
-    });
-    return {
-      progress: total === 0 ? 0 : (completed / total) * 100,
-      completedResources: completed,
-      totalResources: total,
-    };
-  }, [modules]);
+  const { progress, completedResources, totalResources } =
+    calculateProgress(modules);
 
   if (!roadmap) {
     return null;
@@ -360,21 +254,8 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
 
         <div className="space-y-4">
           {modules.map((module, mIndex) => {
-            // Calculate module progress - using regular calculation instead of useMemo in render loop
-            const moduleResources = (module.units || []).reduce(
-              (acc, unit) => acc + (unit.resources || []).length,
-              0,
-            );
-            const moduleCompleted = (module.units || []).reduce(
-              (acc, unit) =>
-                acc + (unit.resources || []).filter((r) => r.completed).length,
-              0,
-            );
-            const moduleProgress =
-              moduleResources === 0
-                ? 0
-                : (moduleCompleted / moduleResources) * 100;
-
+            const { moduleResources, moduleCompleted, moduleProgress } =
+              calculateModuleProgress(module);
             return (
               <Card
                 key={mIndex}
@@ -424,16 +305,8 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
                     )}
                   >
                     {(module.units || []).map((unit, uIndex) => {
-                      // Calculate unit progress - using regular calculation instead of useMemo in render loop
-                      const unitResources = (unit.resources || []).length;
-                      const unitCompleted = (unit.resources || []).filter(
-                        (r) => r.completed,
-                      ).length;
-                      const unitProgress =
-                        unitResources === 0
-                          ? 0
-                          : (unitCompleted / unitResources) * 100;
-
+                      const { unitResources, unitCompleted, unitProgress } =
+                        calculateUnitProgress(unit);
                       return (
                         <AccordionItem
                           value={`unit-${mIndex}-${uIndex}`}
@@ -543,10 +416,35 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
                                           className="flex-1 cursor-pointer"
                                         >
                                           <div className="mb-1 flex items-center gap-2">
-                                            {getIconForResource(
-                                              resource.title,
-                                              resource.url,
-                                            )}
+                                            {(() => {
+                                              const iconType =
+                                                getIconForResource(
+                                                  resource.title,
+                                                  resource.url,
+                                                );
+                                              switch (iconType) {
+                                                case "youtube":
+                                                  return (
+                                                    <Youtube className="h-4 w-4 text-red-600" />
+                                                  );
+                                                case "filetext":
+                                                  return (
+                                                    <FileText className="h-4 w-4 text-blue-600" />
+                                                  );
+                                                case "code":
+                                                  return (
+                                                    <Code className="h-4 w-4 text-green-600" />
+                                                  );
+                                                case "globe":
+                                                  return (
+                                                    <Globe className="h-4 w-4" />
+                                                  );
+                                                default:
+                                                  return (
+                                                    <Book className="h-4 w-4" />
+                                                  );
+                                              }
+                                            })()}
                                             <span
                                               className={`font-medium ${
                                                 resource.completed

@@ -25,9 +25,9 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         // Modern glass-morphism card design
         "relative flex flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/80 shadow-lg backdrop-blur-xl dark:border-gray-700/50 dark:bg-gray-900/80",
         // Subtle inner glow effect
-        "before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-white/20 before:to-transparent",
+        "before:pointer-events-none before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-br before:from-blue-600/10 before:to-transparent",
         hoverable &&
-          "transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10",
+          "transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
         clickable &&
           "cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:ring-offset-2",
         compact ? "p-2" : "p-0",
