@@ -8,14 +8,14 @@ import {
 
 export function Achievements({ achievements }: { achievements: any[] }) {
   return (
-    <Card>
+    <Card className="hover:translate-y-0">
       <CardHeader>
         <CardTitle>Achievements</CardTitle>
         <CardDescription>Badges you've earned</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {achievements.length === 0 && (
-          <div className="text-center py-4 text-muted-foreground">
+          <div className="py-4 text-center text-muted-foreground">
             <p>No achievements yet.</p>
           </div>
         )}

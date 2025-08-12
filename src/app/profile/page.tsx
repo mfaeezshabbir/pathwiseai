@@ -4,7 +4,6 @@ import { Trophy, Award, Rocket } from "lucide-react";
 import { ProfileSummary } from "@/components/profile/ProfileSummary";
 import { AppNavbar } from "@/components/common/AppNavbar";
 import { Achievements } from "@/components/profile/Achievements";
-import { PersonalInfoForm } from "@/components/profile/PersonalInfoForm";
 import { LearningActivity } from "@/components/profile/LearningActivity";
 import { ProjectsBuilt } from "@/components/profile/ProjectsBuilt";
 import { MyRoadmaps } from "@/components/profile/MyRoadmaps";
@@ -18,6 +17,9 @@ const userProfile = {
   roadmaps: [
     { title: "Advanced React and Next.js", progress: 75, modules: 15 },
     { title: "Python for Data Science", progress: 30, modules: 5 },
+    { title: "Full-Stack Development", progress: 50, modules: 10 },
+    { title: "Machine Learning Basics", progress: 20, modules: 8 },
+    { title: "Docker and DevOps", progress: 40, modules: 6 },
   ],
   skills: [
     "React",
@@ -28,6 +30,14 @@ const userProfile = {
     "SQL",
     "Docker",
     "PostgreSQL",
+    "JavaScript",
+    "CSS",
+    "HTML",
+    "jQuery",
+    "Node.js",
+    "Express.js",
+    "Fastify",
+    "GraphQL",
   ],
   rank: "Pro Learner",
   activity: [
@@ -80,39 +90,27 @@ export default function ProfilePage() {
   }, 0);
 
   return (
-    <div className="flex min-h-screen">
-      <AppNavbar />
-      <main className="flex-1 max-w-7xl mx-auto py-10 px-4 md:px-8 md:ml-64">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
-          {/* Profile Sidebar */}
-          <div className="lg:col-span-1 flex flex-col gap-8">
-            <ProfileSummary
-              user={userProfile}
-              stats={{ roadmapsStarted, modulesCompleted }}
-            />
+    <div className="min-h-screen">
+      <main className="mx-auto max-w-full px-4 py-8 md:px-8">
+        <p className="mb-2 text-lg text-muted-foreground">
+          Welcome back! Here’s your learning dashboard.
+        </p>
+        <div className="flex flex-col gap-5">
+          {/* Hero Header */}
+          <ProfileSummary
+            user={userProfile}
+            stats={{ roadmapsStarted, modulesCompleted }}
+            userProfile={userProfile}
+          />
+          <div className="grid w-full gap-4 md:grid-cols-2">
+            <LearningActivity activity={userProfile.activity} />
             <Achievements achievements={userProfile.achievements} />
           </div>
-          {/* Main Content Area */}
-          <div className="lg:col-span-3 flex flex-col gap-10">
-            <div className="mb-2">
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2 text-indigo-700 dark:text-indigo-300">
-                Welcome, {userProfile.name}!
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Track your progress, manage your learning, and showcase your
-                achievements.
-              </p>
-            </div>
-            <PersonalInfoForm user={userProfile} />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <LearningActivity activity={userProfile.activity} />
-              <ProjectsBuilt projects={userProfile.projects} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <MyRoadmaps roadmaps={userProfile.roadmaps} />
-              <SkillsList skills={userProfile.skills} />
-            </div>
-          </div>
+          <SkillsList skills={userProfile.skills} />
+          {/* Dashboard Grid */}
+          <MyRoadmaps roadmaps={userProfile.roadmaps} />
+          {/* Projects Section */}
+          <ProjectsBuilt projects={userProfile.projects} />
         </div>
       </main>
     </div>

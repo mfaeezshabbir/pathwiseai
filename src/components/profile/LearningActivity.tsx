@@ -20,7 +20,7 @@ import {
 
 export function LearningActivity({ activity }: { activity: any[] }) {
   return (
-    <Card>
+    <Card className="hover:translate-y-0">
       <CardHeader>
         <CardTitle>Learning Activity</CardTitle>
         <CardDescription>Modules completed per month</CardDescription>
