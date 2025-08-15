@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useSession, signIn } from "next-auth/react";
 import { filterRoadmaps } from "./utils/filterRoadmaps";
 import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { RoadmapGeneratorCard } from "@/components/roadmaps/RoadmapGeneratorCard";
@@ -30,72 +31,43 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Enhanced mock data with more comprehensive information
-const mockRoadmaps = [
-  {
-    id: "1",
-    title: "Advanced React and Next.js",
-    description:
-      "Master modern React patterns, Next.js 14, and full-stack development",
-    progress: 75,
-    modules: 15,
-    totalHours: 120,
-    difficulty: "Advanced",
-    category: "Frontend",
-    tags: ["React", "Next.js", "TypeScript", "Full-stack"],
-    enrolled: 1250,
-    rating: 4.8,
-    lastAccessed: "2 days ago",
-    estimatedCompletion: "3 weeks",
-    thumbnail: "/api/placeholder/300/200",
-  },
-  {
-    id: "2",
-    title: "Python for Data Science",
-    description:
-      "Complete data science journey from pandas to machine learning",
-    progress: 30,
-    modules: 12,
-    totalHours: 80,
-    difficulty: "Intermediate",
-    category: "Data Science",
-    tags: ["Python", "Pandas", "NumPy", "Machine Learning"],
-    enrolled: 890,
-    rating: 4.9,
-    lastAccessed: "1 week ago",
-    estimatedCompletion: "6 weeks",
-    thumbnail: "/api/placeholder/300/200",
-  },
-  {
-    id: "3",
-    title: "Full-Stack Web Development",
-    description: "End-to-end web development with modern technologies",
-    progress: 0,
-    modules: 20,
-    totalHours: 200,
-    difficulty: "Beginner",
-    category: "Full-stack",
-    tags: ["HTML", "CSS", "JavaScript", "Node.js", "MongoDB"],
-    enrolled: 2100,
-    rating: 4.7,
-    lastAccessed: "Never",
-    estimatedCompletion: "12 weeks",
-    thumbnail: "/api/placeholder/300/200",
-  },
-];
-
-const categories = [
-  "All",
-  "Frontend",
-  "Backend",
-  "Data Science",
-  "Mobile",
-  "DevOps",
-  "AI/ML",
-];
-const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
-
 export default function RoadmapsPage() {
+  const { data: session, status } = useSession();
+
+  // Enhanced mock data with more comprehensive information
+  const mockRoadmaps = [
+    {
+      id: "1",
+      title: "Advanced React and Next.js",
+      description:
+        "Master modern React patterns, Next.js 14, and full-stack development",
+      progress: 75,
+      modules: 15,
+      totalHours: 120,
+      difficulty: "Advanced",
+      category: "Frontend",
+      tags: ["React", "Next.js", "TypeScript", "Full-stack"],
+      enrolled: 1250,
+      rating: 4.8,
+      lastAccessed: "2 days ago",
+      estimatedCompletion: "3 weeks",
+      thumbnail:
+        "http://localhost:9002/_next/image?url=%2Fassets%2Fpathwiseai_logo.png&w=48&q=75",
+    },
+    // ...rest of mockRoadmaps...
+  ];
+
+  const categories = [
+    "All",
+    "Frontend",
+    "Backend",
+    "Data Science",
+    "Mobile",
+    "DevOps",
+    "AI/ML",
+  ];
+  const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
+
   const [roadmapData, setRoadmapData] = useState<GenerateRoadmapOutput | null>(
     null,
   );
@@ -109,6 +81,10 @@ export default function RoadmapsPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [filteredRoadmaps, setFilteredRoadmaps] = useState(mockRoadmaps);
 
+  useEffect(() => {
+    if (status !== "loading" && !session) signIn();
+  }, [session, status]);
+
   // Filter roadmaps based on search and filters
   useEffect(() => {
     setFilteredRoadmaps(
@@ -120,6 +96,17 @@ export default function RoadmapsPage() {
       ),
     );
   }, [searchQuery, selectedCategory, selectedDifficulty]);
+
+  if (status === "loading" || !session) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
+  // Only signed-in users can generate roadmaps or view this page
+  // ...existing UI code below...
 
   const handleReset = () => setRoadmapData(null);
 

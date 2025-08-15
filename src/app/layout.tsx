@@ -60,16 +60,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Navbar */}
-          <AppNavbar />
-          {/* Main Content */}
           <Providers>
+            {/* Navbar */}
+            <AppNavbar />
+            {/* Main Content */}
             <main className="relative z-10 mx-auto w-full max-w-[90rem] flex-1 px-4 py-10 md:px-12">
               {children}
             </main>
+            {/* Footer */}
+            <AppFooter />
           </Providers>
-          {/* Footer */}
-          <AppFooter />
           {/* Toaster for notifications */}
           <div className="fixed right-4 top-4 z-[9999]">
             <Toaster />

@@ -1,5 +1,12 @@
 "use client";
 import React, { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -28,15 +35,28 @@ const navLinks: NavLink[] = [
   { name: "About", href: "/about", icon: InfoIcon },
 ];
 
-// Profile avatar component
-function ProfileAvatar() {
-  // Replace with user image if available
+// Profile dropdown menu component
+function ProfileDropdown() {
+  const { data: session } = useSession();
+  const userName = session?.user?.name || "Profile";
   return (
-    <Link href="/profile">
-      <Button variant="outline" size="icon">
-        <User />
-      </Button>
-    </Link>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="icon" className="relative">
+          <User />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-40">
+        <DropdownMenuItem asChild>
+          <Link href="/profile">Profile</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+        >
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -97,7 +117,7 @@ export function AppNavbar() {
             AI-powered learning
           </span>
           <ThemeToggle />
-          <ProfileAvatar />
+          <ProfileDropdown />
         </div>
       </header>
       {/* Mobile Navbar */}
@@ -110,7 +130,7 @@ export function AppNavbar() {
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <ProfileAvatar />
+            <ProfileDropdown />
             <Button
               className="rounded-full border border-gray-200 bg-white p-2 shadow-md dark:border-gray-800 dark:bg-[#020617]"
               onClick={() => setOpen(true)}
