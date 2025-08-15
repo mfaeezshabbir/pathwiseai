@@ -5,24 +5,25 @@ const uri = process.env.MONGODB_URI!;
 const client = new MongoClient(uri);
 
 export async function POST(req: NextRequest) {
-  const { userId, roadmap, moduleProjects } = await req.json();
-  if (!userId || !roadmap) {
+  const { userId, projectIdeas, moduleTitle, skills } = await req.json();
+  if (!userId || !projectIdeas || !moduleTitle) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
   }
   await client.connect();
   const db = client.db();
-  // Save roadmap with modules and optionally linked projects per module
-  const roadmapDoc = {
-    userId: new ObjectId(userId),
-    ...roadmap,
-    modules: roadmap.modules?.map((mod: any) => ({
-      ...mod,
-      linkedProjects: moduleProjects?.[mod.title] || [],
-    })),
-    createdAt: new Date(),
-  };
-  const result = await db.collection("roadmaps").insertOne(roadmapDoc);
-  return NextResponse.json({ success: true, roadmapId: result.insertedId });
+  const result = await db
+    .collection("projectIdeas")
+    .insertOne({
+      userId: new ObjectId(userId),
+      projectIdeas,
+      moduleTitle,
+      skills,
+      createdAt: new Date(),
+    });
+  return NextResponse.json({
+    success: true,
+    projectIdeasId: result.insertedId,
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -33,9 +34,9 @@ export async function GET(req: NextRequest) {
   }
   await client.connect();
   const db = client.db();
-  const roadmaps = await db
-    .collection("roadmaps")
+  const ideas = await db
+    .collection("projectIdeas")
     .find({ userId: new ObjectId(userId) })
     .toArray();
-  return NextResponse.json({ roadmaps });
+  return NextResponse.json({ ideas });
 }

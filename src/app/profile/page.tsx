@@ -5,6 +5,7 @@ import { ProfileSummary } from "@/components/profile/ProfileSummary";
 import { Achievements } from "@/components/profile/Achievements";
 import { LearningActivity } from "@/components/profile/LearningActivity";
 import { ProjectsBuilt } from "@/components/profile/ProjectsBuilt";
+import { ProjectIdeasGenerated } from "@/components/profile/ProjectIdeasGenerated";
 import { MyRoadmaps } from "@/components/profile/MyRoadmaps";
 import { SkillsList } from "@/components/profile/SkillsList";
 
@@ -72,6 +73,10 @@ export default function ProfilePage() {
           <SkillsList skills={userProfile.skills} />
           {/* Dashboard Grid */}
           <MyRoadmaps roadmaps={userProfile.roadmaps} />
+          {/* Project Ideas Generated Section */}
+          <ProjectIdeasGenerated
+            projectIdeas={userProfile.projectIdeas || []}
+          />
           {/* Projects Section */}
           <ProjectsBuilt projects={userProfile.projects} />
         </div>

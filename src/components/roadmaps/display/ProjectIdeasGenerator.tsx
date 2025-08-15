@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Code, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -25,6 +26,7 @@ export default function ProjectIdeasGenerator({
 }) {
   const [ideas, setIdeas] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { data: session } = useSession();
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -34,6 +36,20 @@ export default function ProjectIdeasGenerator({
         roadmapName: moduleTitle,
       });
       setIdeas(result.projectIdeas);
+      // Save project ideas to API with user ID if available
+      const userId = session?.user?.id;
+      if (userId) {
+        await fetch("/api/project/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            projectIdeas: result.projectIdeas,
+            moduleTitle,
+            skills,
+          }),
+        });
+      }
     } catch (error) {
       toast({
         title: "Error generating project ideas",

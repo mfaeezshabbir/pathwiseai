@@ -78,6 +78,16 @@ export function RoadmapGenerator({
 
   const handleBack = () => setStep(step - 1);
 
+  // Store project ideas per module title
+  const [moduleProjects, setModuleProjects] = useState<
+    Record<string, string[]>
+  >({});
+
+  // Helper to link project ideas to a module
+  const linkProjectsToModule = (moduleTitle: string, ideas: string[]) => {
+    setModuleProjects((prev) => ({ ...prev, [moduleTitle]: ideas }));
+  };
+
   const handleGenerate = async () => {
     setIsLoading(true);
     setError(null);
@@ -89,6 +99,30 @@ export function RoadmapGenerator({
         learningStyle: "any",
       };
       const roadmapData = await generateRoadmap(values);
+      // Save roadmap to API with user ID and linked module projects if available
+      const session = (await import("next-auth/react")).useSession?.();
+      let userId = null;
+      if (
+        session &&
+        session.data &&
+        session.data.user &&
+        session.data.user.id
+      ) {
+        userId = session.data.user.id;
+      } else {
+        userId = null;
+      }
+      if (userId) {
+        await fetch("/api/roadmap/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            roadmap: roadmapData,
+            moduleProjects,
+          }),
+        });
+      }
       onRoadmapGenerated(roadmapData);
     } catch (e) {
       setError("Failed to generate roadmap. Please try again.");
