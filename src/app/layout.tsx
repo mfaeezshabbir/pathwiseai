@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppNavbar } from "@/components/common/AppNavbar";
 import { AppFooter } from "@/components/common/AppFooter";
+import { Providers } from "./providers";
 
 import "./globals.css";
 
@@ -25,7 +26,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-body antialiased min-h-screen bg-black text-gray-900 dark:text-gray-100 flex flex-col relative">
+      <body className="relative flex min-h-screen flex-col bg-black font-body text-gray-900 antialiased dark:text-gray-100">
         {/* Light Sphere Grid Background */}
         <div
           className="absolute inset-0 z-0 dark:hidden"
@@ -62,13 +63,15 @@ export default function RootLayout({
           {/* Navbar */}
           <AppNavbar />
           {/* Main Content */}
-          <main className="flex-1 w-full max-w-[90rem] mx-auto px-4 md:px-12 py-10 relative z-10">
-            {children}
-          </main>
+          <Providers>
+            <main className="relative z-10 mx-auto w-full max-w-[90rem] flex-1 px-4 py-10 md:px-12">
+              {children}
+            </main>
+          </Providers>
           {/* Footer */}
           <AppFooter />
           {/* Toaster for notifications */}
-          <div className="fixed z-[9999] top-4 right-4">
+          <div className="fixed right-4 top-4 z-[9999]">
             <Toaster />
           </div>
         </ThemeProvider>

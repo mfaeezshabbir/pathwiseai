@@ -1,93 +1,56 @@
 "use client";
-import React from "react";
-import { Trophy, Award, Rocket } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useSession, signIn } from "next-auth/react";
 import { ProfileSummary } from "@/components/profile/ProfileSummary";
-import { AppNavbar } from "@/components/common/AppNavbar";
 import { Achievements } from "@/components/profile/Achievements";
 import { LearningActivity } from "@/components/profile/LearningActivity";
 import { ProjectsBuilt } from "@/components/profile/ProjectsBuilt";
 import { MyRoadmaps } from "@/components/profile/MyRoadmaps";
 import { SkillsList } from "@/components/profile/SkillsList";
 
-// Mock data for the profile page
-const userProfile = {
-  name: "Alex Doe",
-  email: "alex.doe@example.com",
-  avatarUrl: "https://placehold.co/100x100.png",
-  roadmaps: [
-    { title: "Advanced React and Next.js", progress: 75, modules: 15 },
-    { title: "Python for Data Science", progress: 30, modules: 5 },
-    { title: "Full-Stack Development", progress: 50, modules: 10 },
-    { title: "Machine Learning Basics", progress: 20, modules: 8 },
-    { title: "Docker and DevOps", progress: 40, modules: 6 },
-  ],
-  skills: [
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Python",
-    "Pandas",
-    "SQL",
-    "Docker",
-    "PostgreSQL",
-    "JavaScript",
-    "CSS",
-    "HTML",
-    "jQuery",
-    "Node.js",
-    "Express.js",
-    "Fastify",
-    "GraphQL",
-  ],
-  rank: "Pro Learner",
-  activity: [
-    { month: "Jan", modules: 4 },
-    { month: "Feb", modules: 6 },
-    { month: "Mar", modules: 10 },
-    { month: "Apr", modules: 5 },
-    { month: "May", modules: 8 },
-    { month: "Jun", modules: 7 },
-  ],
-  projects: [
-    {
-      title: "Personal Portfolio Website",
-      description:
-        "A responsive portfolio site built with Next.js to showcase my projects and skills.",
-      repoUrl: "https://github.com/example/portfolio",
-      techStack: ["Next.js", "React", "Tailwind CSS"],
-    },
-    {
-      title: "Data Analysis Dashboard",
-      description:
-        "An interactive dashboard for visualizing sales data using Pandas and Matplotlib.",
-      repoUrl: "https://github.com/example/dashboard",
-      techStack: ["Python", "Pandas", "Flask"],
-    },
-  ],
-  achievements: [
-    {
-      icon: Trophy,
-      title: "Roadmap Conqueror",
-      description: "Completed a full learning roadmap.",
-    },
-    {
-      icon: Award,
-      title: "Century Club",
-      description: "Completed 100 learning units.",
-    },
-    {
-      icon: Rocket,
-      title: "Project Launcher",
-      description: "Finished and deployed a project.",
-    },
-  ],
-};
-
 export default function ProfilePage() {
-  const roadmapsStarted = userProfile.roadmaps.length;
-  const modulesCompleted = userProfile.roadmaps.reduce((total, roadmap) => {
-    return total + Math.floor(roadmap.modules * (roadmap.progress / 100));
-  }, 0);
+  const { data: session, status } = useSession();
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      signIn();
+      return;
+    }
+    const fetchProfile = async () => {
+      setLoading(true);
+      const res = await fetch(`/api/user/profile?email=${session.user?.email}`);
+      const data = await res.json();
+      setUserProfile(data.userProfile);
+      setLoading(false);
+    };
+    fetchProfile();
+  }, [session, status]);
+
+  if (status === "loading" || loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+  if (!userProfile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        No profile found.
+      </div>
+    );
+  }
+
+  const roadmapsStarted = userProfile.roadmaps?.length || 0;
+  const modulesCompleted = userProfile.roadmaps?.reduce(
+    (total: number, roadmap: any) => {
+      return total + Math.floor(roadmap.modules * (roadmap.progress / 100));
+    },
+    0,
+  );
 
   return (
     <div className="min-h-screen">
