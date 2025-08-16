@@ -47,31 +47,45 @@ const RoadmapResourceSchema = z.object({
 });
 export type RoadmapResource = z.infer<typeof RoadmapResourceSchema>;
 
-const RoadmapUnitSchema = z.object({
-  title: z
-    .string()
-    .describe("The title of the unit, which is a sub-topic within a module."),
-  objective: z
-    .string()
-    .describe(
-      "A clear, one-sentence learning objective for this unit. Example: 'Understand how Docker networking works'",
-    ),
-  summary: z
-    .string()
-    .describe(
-      "A mini AI-generated summary or concept breakdown for the unit's topic.",
-    ),
-  task: z
-    .string()
-    .describe(
-      "A hands-on task or quiz to test understanding. Example: 'Run your first container and expose a port.'",
-    ),
-  resources: z
-    .array(RoadmapResourceSchema)
-    .describe(
-      "A list of curated learning resources (docs, videos, blogs) for this unit.",
-    ),
-});
+const RoadmapUnitSchema: z.ZodType<any> = z.lazy(() =>
+  z.object({
+    title: z
+      .string()
+      .describe("The title of the unit, which is a sub-topic within a module."),
+    objective: z
+      .string()
+      .describe(
+        "A clear, one-sentence learning objective for this unit. Example: 'Understand how Docker networking works'",
+      ),
+    summary: z
+      .string()
+      .describe(
+        "A mini AI-generated summary or concept breakdown for the unit's topic.",
+      ),
+    task: z
+      .string()
+      .describe(
+        "A hands-on task or quiz to test understanding. Example: 'Run your first container and expose a port.'",
+      ),
+    resources: z
+      .array(RoadmapResourceSchema)
+      .describe(
+        "A list of curated learning resources (docs, videos, blogs) for this unit.",
+      ),
+    projects: z
+      .array(z.string())
+      .optional()
+      .describe(
+        "A list of context-specific, progressively challenging project ideas for this unit.",
+      ),
+    subtopics: z
+      .array(RoadmapUnitSchema)
+      .optional()
+      .describe(
+        "A list of subtopics (units) for this unit, for deeper tree structure.",
+      ),
+  }),
+);
 export type RoadmapUnit = z.infer<typeof RoadmapUnitSchema>;
 
 const RoadmapModuleSchema = z.object({
@@ -127,7 +141,7 @@ const prompt = ai.definePrompt({
   name: "generateRoadmapPrompt",
   input: { schema: GenerateRoadmapInputSchema },
   output: { schema: GenerateRoadmapOutputSchema },
-  prompt: `You are an expert learning roadmap generator, inspired by the detailed and structured guides on roadmap.sh. Your task is to create a comprehensive, modular, and personalized learning roadmap based on the user's input. The roadmap must be highly structured and provide a clear, actionable path for the user.
+  prompt: `You are an expert learning roadmap generator, inspired by the detailed and structured guides on roadmap.sh and modern mindmap/tree-based learning systems. Your task is to create a comprehensive, hierarchical, and personalized learning roadmap based on the user's input. The roadmap must be highly structured, visually tree-like, and provide a clear, actionable path for the user.
 
 **User Input:**
 - Desired Skill/Topic: {{{desiredSkill}}}
@@ -139,28 +153,33 @@ const prompt = ai.definePrompt({
 Generate a roadmap as a JSON object that follows the specified output schema precisely.
 
 1.  **Overall Roadmap:**
-    *   Create a clear and motivating \`title\` for the entire roadmap.
-    *   Write a concise \`description\` of what the user will learn.
-    *   List any \`prerequisites\` skills or knowledge required.
-    *   Suggest \`relatedRoadmaps\` for further learning.
+  *   Create a clear and motivating \`title\` for the entire roadmap.
+  *   Write a concise \`description\` of what the user will learn.
+  *   List any \`prerequisites\` skills or knowledge required.
+  *   Suggest \`relatedRoadmaps\` for further learning.
 
-2.  **Modular Structure:**
-    *   Break down the main topic into logical, high-level **modules**. Each module represents a major concept (e.g., "Docker Basics", "Docker for Developers").
-    *   For each module, provide a clear \`title\` and a \`description\`.
+2.  **Hierarchical Modular Structure:**
+  *   Break down the main topic into logical, high-level **modules**. Each module represents a major concept (e.g., "Docker Basics", "Data Types in Python").
+  *   For each module, provide a clear \`title\` and a \`description\`.
+  *   For each module, list all relevant subtopics as **units**. If a unit can be further broken down, use the \`subtopics\` field to create a deeper tree (e.g., "Data Types" → int, float, str, list, tuple, dict, set, bool).
 
-3.  **Granular Units:**
-    *   Within each module, create smaller, focused **units**. A unit is a specific sub-topic (e.g., "What is Docker?", "Installing Docker + CLI basics").
-    *   For each unit, you MUST provide:
-        *   A \`title\`.
-        *   A clear, one-sentence learning \`objective\`.
-        *   A brief \`summary\` or concept breakdown.
-        *   A hands-on \`task\` or a simple quiz question.
-        *   A list of curated \`resources\`.
+3.  **Granular Units and Subtopics:**
+  *   Within each module and unit, create smaller, focused **units** and **subtopics** as needed for a true tree structure.
+  *   For each unit and subtopic, you MUST provide:
+    *   A \`title\`.
+    *   A clear, one-sentence learning \`objective\`.
+    *   A brief \`summary\` or concept breakdown.
+    *   A hands-on \`task\` or a simple quiz question.
+    *   A list of curated \`resources\`.
+    *   A list of context-specific, progressively challenging \`projects\` (from beginner to advanced, relevant to the topic/module).
 
 4.  **Curated Resources:**
-    *   For each resource, include a \`title\`, a valid \`url\` (if you can find a real, relevant one), and a brief \`description\`.
+  *   For each resource, include a \`title\`, a valid \`url\` (if you can find a real, relevant one), and a brief \`description\`.
 
-The final output must be a single, valid JSON object matching the defined schema. Ensure the structure is logical and progressive, guiding the user from foundational concepts to more advanced topics.`,
+**Important:**
+- The roadmap must be a tree, not a flat list. Use the \`subtopics\` field for deeper breakdowns.
+- Projects must be context-specific and increase in challenge as the user progresses through the roadmap.
+- The final output must be a single, valid JSON object matching the defined schema. Ensure the structure is logical, progressive, and visually tree-like, guiding the user from foundational concepts to more advanced topics.`,
 });
 
 const generateRoadmapFlow = ai.defineFlow(
