@@ -1,11 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import type {
-  GenerateRoadmapOutput,
-  RoadmapModule,
-  RoadmapUnit,
-  RoadmapResource,
-} from "@/ai/flows/generate-roadmap";
+import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -17,22 +12,12 @@ type RoadmapDisplayProps = {
   onReset: () => void;
 };
 
-// Add completed property to the types for state management
-type ResourceWithState = RoadmapResource & { completed: boolean };
-type UnitWithState = Omit<RoadmapUnit, "resources"> & {
-  resources: ResourceWithState[];
-};
-type ModuleWithState = Omit<RoadmapModule, "units"> & {
-  units: UnitWithState[];
-};
-
 export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
-  const [modules, setModules] = useState<ModuleWithState[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    // Initialize state with 'completed' property
-    if (roadmap && roadmap.modules) {
-      if (roadmap.modules.length === 0) {
+    if (roadmap && (roadmap as any).categories) {
+      if ((roadmap as any).categories.length === 0) {
         toast({
           title: "Could not parse roadmap",
           description:
@@ -41,59 +26,39 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
         });
         onReset();
       } else {
-        interface InitialResource extends RoadmapResource {
-          completed: boolean;
-        }
-
-        interface InitialUnit extends Omit<RoadmapUnit, "resources"> {
-          resources: InitialResource[];
-        }
-
-        interface InitialModule extends Omit<RoadmapModule, "units"> {
-          units: InitialUnit[];
-        }
-
-        const initialState: InitialModule[] = roadmap.modules.map(
-          (module): InitialModule => ({
-            ...module,
-            units: (module.units || []).map(
-              (unit): InitialUnit => ({
-                ...unit,
-                resources: (unit.resources || []).map(
-                  (resource: RoadmapResource): InitialResource => ({
-                    ...resource,
-                    completed: false,
-                  }),
-                ),
-              }),
-            ),
-          }),
-        );
-        setModules(initialState);
+        const initialState = (roadmap as any).categories.map((cat: any) => ({
+          ...cat,
+          subtopics: (cat.subtopics || []).map((sub: any) => ({
+            ...sub,
+            resources: (sub.resources || []).map((r: any) => ({
+              ...r,
+              completed: false,
+            })),
+          })),
+        }));
+        setCategories(initialState);
       }
     }
   }, [roadmap, onReset]);
 
   const handleToggleResource = (
-    moduleIndex: number,
-    unitIndex: number,
+    categoryIndex: number,
+    subIndex: number,
     resourceIndex: number,
   ) => {
-    setModules((prevModules) => {
-      const newModules = JSON.parse(JSON.stringify(prevModules)); // Deep copy
-      const resource =
-        newModules[moduleIndex].units[unitIndex].resources[resourceIndex];
-      resource.completed = !resource.completed;
-      return newModules;
+    setCategories((prev) => {
+      const next = JSON.parse(JSON.stringify(prev));
+      const res =
+        next[categoryIndex].subtopics[subIndex].resources[resourceIndex];
+      res.completed = !res.completed;
+      return next;
     });
   };
 
   const { progress, completedResources, totalResources } =
-    calculateProgress(modules);
+    calculateProgress(categories);
 
-  if (!roadmap) {
-    return null;
-  }
+  if (!roadmap) return null;
 
   return (
     <div className="space-y-8">
@@ -103,7 +68,6 @@ export function RoadmapDisplay({ roadmap, onReset }: RoadmapDisplayProps) {
           Create New Roadmap
         </Button>
       </div>
-      {/* Mindmap/Tree View */}
       <RoadmapTreeView roadmap={roadmap} />
     </div>
   );

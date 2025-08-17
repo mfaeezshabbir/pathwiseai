@@ -1,10 +1,4 @@
-// Utility functions for roadmap display
-import {
-  RoadmapModule,
-  RoadmapUnit,
-  RoadmapResource,
-} from "@/ai/flows/generate-roadmap";
-
+// Utility functions for roadmap display (adapted to categories/subtopics/resources)
 export const getIconForResource = (title: string, url?: string) => {
   const lowerTitle = title.toLowerCase();
   if (url?.includes("youtube.com") || url?.includes("youtu.be"))
@@ -22,14 +16,14 @@ export const getIconForResource = (title: string, url?: string) => {
   return "book";
 };
 
-export function calculateProgress(modules: any[]) {
+export function calculateProgress(categories: any[]) {
   let completed = 0;
   let total = 0;
-  modules.forEach((module) => {
-    (module.units || []).forEach((unit: any) => {
-      total += (unit.resources || []).length;
-      (unit.resources || []).forEach((resource: any) => {
-        if (resource.completed) completed++;
+  categories.forEach((cat) => {
+    (cat.subtopics || []).forEach((sub: any) => {
+      total += (sub.resources || []).length;
+      (sub.resources || []).forEach((res: any) => {
+        if (res.completed) completed++;
       });
     });
   });
@@ -40,33 +34,34 @@ export function calculateProgress(modules: any[]) {
   };
 }
 
-export function calculateModuleProgress(module: any) {
-  const moduleResources = (module.units || []).reduce(
-    (acc: number, unit: any) => acc + (unit.resources || []).length,
+export function calculateCategoryProgress(category: any) {
+  const categoryResources = (category.subtopics || []).reduce(
+    (acc: number, sub: any) => acc + (sub.resources || []).length,
     0,
   );
-  const moduleCompleted = (module.units || []).reduce(
-    (acc: number, unit: any) =>
-      acc + (unit.resources || []).filter((r: any) => r.completed).length,
+  const categoryCompleted = (category.subtopics || []).reduce(
+    (acc: number, sub: any) =>
+      acc + (sub.resources || []).filter((r: any) => r.completed).length,
     0,
   );
   return {
-    moduleResources,
-    moduleCompleted,
-    moduleProgress:
-      moduleResources === 0 ? 0 : (moduleCompleted / moduleResources) * 100,
+    categoryResources,
+    categoryCompleted,
+    categoryProgress:
+      categoryResources === 0
+        ? 0
+        : (categoryCompleted / categoryResources) * 100,
   };
 }
 
-export function calculateUnitProgress(unit: any) {
-  const unitResources = (unit.resources || []).length;
-  const unitCompleted = (unit.resources || []).filter(
+export function calculateSubtopicProgress(subtopic: any) {
+  const subResources = (subtopic.resources || []).length;
+  const subCompleted = (subtopic.resources || []).filter(
     (r: any) => r.completed,
   ).length;
   return {
-    unitResources,
-    unitCompleted,
-    unitProgress:
-      unitResources === 0 ? 0 : (unitCompleted / unitResources) * 100,
+    subResources,
+    subCompleted,
+    subProgress: subResources === 0 ? 0 : (subCompleted / subResources) * 100,
   };
 }
