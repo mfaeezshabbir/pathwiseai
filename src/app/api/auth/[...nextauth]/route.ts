@@ -21,10 +21,22 @@ declare module "next-auth" {
   }
 }
 
-const uri = process.env.MONGODB_URI!;
-const client = new MongoClient(uri);
+// MongoDB client will be initialized on first use
+let client: MongoClient | null = null;
+
+function getMongoClient() {
+  if (!client) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      throw new Error("MONGODB_URI environment variable is required");
+    }
+    client = new MongoClient(uri);
+  }
+  return client;
+}
 
 async function getUser(email: string) {
+  const client = getMongoClient();
   await client.connect();
   const db = client.db();
   const user = await db.collection("users").findOne({ email });
