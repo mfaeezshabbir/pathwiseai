@@ -21,14 +21,24 @@ declare module "next-auth" {
   }
 }
 
-const uri = process.env.MONGODB_URI!;
-const client = new MongoClient(uri);
-
 async function getUser(email: string) {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    // During build/static analysis the environment variable may be missing.
+    // Return null so auth flows gracefully degrade instead of throwing.
+    console.warn("MONGODB_URI not set; skipping DB lookup for user:", email);
+    return null;
+  }
+
+  const client = new MongoClient(uri);
   await client.connect();
-  const db = client.db();
-  const user = await db.collection("users").findOne({ email });
-  return user;
+  try {
+    const db = client.db();
+    const user = await db.collection("users").findOne({ email });
+    return user;
+  } finally {
+    await client.close();
+  }
 }
 
 const handler = NextAuth({

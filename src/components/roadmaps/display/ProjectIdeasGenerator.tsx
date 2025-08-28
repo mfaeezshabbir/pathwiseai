@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Code, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { generateProjectIdeas } from "@/ai/flows/generate-project-ideas";
+import type { GenerateProjectIdeasOutput } from "@/ai/flows/generate-project-ideas";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -31,10 +31,13 @@ export default function ProjectIdeasGenerator({
   const handleGenerate = async () => {
     setIsLoading(true);
     try {
-      const result = await generateProjectIdeas({
-        skills,
-        roadmapName: moduleTitle,
+      const res = await fetch("/api/ai/project-ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skills, roadmapName: moduleTitle }),
       });
+      if (!res.ok) throw new Error("Failed to generate project ideas");
+      const result: GenerateProjectIdeasOutput = await res.json();
       setIdeas(result.projectIdeas);
       // Save project ideas to API with user ID if available
       const userId = session?.user?.id;

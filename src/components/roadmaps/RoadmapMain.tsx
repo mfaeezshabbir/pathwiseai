@@ -33,7 +33,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { generateRoadmap } from "@/ai/flows/generate-roadmap";
 import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { toast } from "@/hooks/use-toast";
 
@@ -182,7 +181,13 @@ export function RoadmapMain({ onRoadmapGenerated }: RoadmapMainProps) {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const roadmap = await generateRoadmap(values);
+      const res = await fetch("/api/roadmap/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) throw new Error("Failed to generate roadmap");
+      const roadmap: GenerateRoadmapOutput = await res.json();
       onRoadmapGenerated(roadmap);
       toast({
         title: "🎉 Roadmap Created!",

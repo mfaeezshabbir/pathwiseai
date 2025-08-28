@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { generateRoadmap } from "@/ai/flows/generate-roadmap";
 import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
@@ -98,7 +97,13 @@ export function RoadmapGenerator({
         availableTime: "5",
         learningStyle: "any",
       };
-      const roadmapData = await generateRoadmap(values);
+      const res = await fetch("/api/roadmap/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) throw new Error("Failed to generate roadmap");
+      const roadmapData: GenerateRoadmapOutput = await res.json();
       // Save roadmap to API with user ID and linked module projects if available
       const session = (await import("next-auth/react")).useSession?.();
       let userId = null;
