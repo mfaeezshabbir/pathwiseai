@@ -13,7 +13,13 @@ export async function GET(req: NextRequest) {
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
     // Validate session
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    let token;
+    try {
+      token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    } catch (err) {
+      console.error("/api/roadmap/[id] getToken error:", err);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     if (!token || !token.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

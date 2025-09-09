@@ -13,7 +13,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Validate session via next-auth JWT
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  let token;
+  try {
+    token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  } catch (err) {
+    console.error("/api/roadmap/save getToken error:", err);
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   if (!token || !token.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
