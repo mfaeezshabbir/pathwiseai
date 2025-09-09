@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { MongoClient, ObjectId } from "mongodb";
 import { getToken } from "next-auth/jwt";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params?: { id?: string } },
-) {
+export async function POST(req: NextRequest) {
   try {
-    const id = params?.id;
-    // basic guard against undefined/invalid id (ObjectId 24-hex chars)
+    const body = await req.json();
+
+    // Extract id safely
+    const id: string | null = typeof body?.id === "string" ? body.id : null;
+
+    // Guard against undefined or invalid ObjectId
     if (!id || !ObjectId.isValid(id)) {
       return NextResponse.json(
         { error: "Invalid or missing id" },
@@ -16,7 +17,7 @@ export async function GET(
       );
     }
 
-    // Only call getToken when the request includes authorization headers/cookies.
+    // Ensure we have auth headers before calling getToken
     const hasAuthHeader =
       typeof req.headers?.get === "function" &&
       (req.headers.get("authorization") || req.headers.get("cookie"));
@@ -28,17 +29,18 @@ export async function GET(
     try {
       token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     } catch (err) {
-      console.error("/api/roadmap/[id] getToken error:", err);
+      console.error("/api/roadmap/save getToken error:", err);
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
     const tokenId = (token as any)?.id ?? (token as any)?.sub;
     if (!token || !tokenId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const uri = process.env.MONGODB_URI;
-    if (!uri) {
-      console.error("Missing MONGODB_URI");
+    if (!uri || typeof uri !== "string" || !uri.startsWith("mongodb")) {
+      console.error("Missing or invalid MONGODB_URI");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 },
@@ -49,27 +51,22 @@ export async function GET(
     try {
       await client.connect();
       const db = client.db();
-      const roadmap = await db
+
+      // Example: update or insert roadmap document
+      const result = await db
         .collection("roadmaps")
-        .findOne({ _id: new ObjectId(id) });
+        .updateOne(
+          { _id: new ObjectId(id), userId: String(tokenId) },
+          { $set: { ...body, updatedAt: new Date() } },
+          { upsert: true },
+        );
 
-      if (!roadmap) {
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
-      }
-
-      const ownerId = (roadmap as any).userId?.toString?.() || null;
-      if (ownerId !== String(tokenId)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-
-      // convert _id to string for client
-      (roadmap as any)._id = String((roadmap as any)._id);
-      return NextResponse.json({ roadmap });
+      return NextResponse.json({ success: true, result });
     } finally {
       await client.close().catch(() => {});
     }
   } catch (err: any) {
-    console.error("/api/roadmap/[id] error:", err);
+    console.error("/api/roadmap/save error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
