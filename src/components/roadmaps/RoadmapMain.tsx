@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -165,6 +166,7 @@ const learningStyles = [
 
 export function RoadmapMain({ onRoadmapGenerated }: RoadmapMainProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [selectedSkill, setSelectedSkill] = useState("");
@@ -194,11 +196,31 @@ export function RoadmapMain({ onRoadmapGenerated }: RoadmapMainProps) {
       try {
         const userId = session?.user?.id ?? null;
         if (userId) {
-          await fetch("/api/roadmap/save", {
+          const saveRes = await fetch("/api/roadmap/save", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId, roadmap }),
           });
+          if (saveRes.ok) {
+            const saveJson = await saveRes.json();
+            const savedRoadmap = saveJson.roadmap;
+            const roadmapId =
+              (savedRoadmap && (savedRoadmap._id || savedRoadmap.id)) ||
+              saveJson.roadmapId ||
+              saveJson.insertedId;
+            if (savedRoadmap && roadmapId) {
+              try {
+                sessionStorage.setItem(
+                  `savedRoadmap:${roadmapId}`,
+                  JSON.stringify(savedRoadmap),
+                );
+              } catch (e) {
+                // ignore
+              }
+              router.push(`/roadmaps/${roadmapId}`);
+              return;
+            }
+          }
         }
       } catch (saveErr) {
         console.error("Failed to save roadmap:", saveErr);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppCard } from "@/components/common/AppCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ const MAX_VISIBLE = 3;
 
 export function MyRoadmaps({ roadmaps }: { roadmaps: any[] }) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const visibleRoadmaps = roadmaps.slice(0, MAX_VISIBLE);
   const hasMore = roadmaps.length > MAX_VISIBLE;
@@ -37,7 +39,15 @@ export function MyRoadmaps({ roadmaps }: { roadmaps: any[] }) {
                 {roadmap.progress}% complete
               </p>
             </div>
-            <Button variant="secondary" size="sm">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() =>
+                router.push(
+                  `/roadmaps/${roadmap._id ?? roadmap.id ?? roadmap.roadmapId}`,
+                )
+              }
+            >
               Continue
             </Button>
           </div>
@@ -65,7 +75,15 @@ export function MyRoadmaps({ roadmaps }: { roadmaps: any[] }) {
                     {roadmap.progress}% complete
                   </p>
                 </div>
-                <Button variant="secondary" size="sm">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() =>
+                    router.push(
+                      `/roadmaps/${roadmap._id ?? roadmap.id ?? roadmap.roadmapId}`,
+                    )
+                  }
+                >
                   Continue
                 </Button>
               </div>

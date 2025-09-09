@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MongoClient, ObjectId } from "mongodb";
+import { getToken } from "next-auth/jwt";
 
 const uri = process.env.MONGODB_URI!;
 const client = new MongoClient(uri);
 
 export async function POST(req: NextRequest) {
-  const { userId, roadmap, moduleProjects } = await req.json();
-  if (!userId || !roadmap) {
-    return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+  const body = await req.json();
+  const { roadmap, moduleProjects } = body;
+  if (!roadmap) {
+    return NextResponse.json({ error: "Missing roadmap" }, { status: 400 });
   }
+
+  // Validate session via next-auth JWT
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  if (!token || !token.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = token.id as string;
+
   await client.connect();
   const db = client.db();
   // Save roadmap with modules and optionally linked projects per module
@@ -22,7 +33,13 @@ export async function POST(req: NextRequest) {
     createdAt: new Date(),
   };
   const result = await db.collection("roadmaps").insertOne(roadmapDoc);
-  return NextResponse.json({ success: true, roadmapId: result.insertedId });
+  // Prepare saved roadmap for response (stringify ObjectIds)
+  const savedRoadmap = {
+    ...roadmapDoc,
+    _id: String(result.insertedId),
+    userId: String(roadmapDoc.userId),
+  };
+  return NextResponse.json({ success: true, roadmap: savedRoadmap });
 }
 
 export async function GET(req: NextRequest) {

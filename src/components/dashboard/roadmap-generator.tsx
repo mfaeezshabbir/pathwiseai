@@ -16,6 +16,7 @@ import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   desiredSkill: z.string().min(2, {
@@ -89,6 +90,7 @@ export function RoadmapGenerator({
   };
 
   const { data: session } = useSession();
+  const router = useRouter();
 
   const handleGenerate = async () => {
     setIsLoading(true);
@@ -110,7 +112,7 @@ export function RoadmapGenerator({
       // Save roadmap to API with user ID and linked module projects if available
       const userId = session?.user?.id ?? null;
       if (userId) {
-        await fetch("/api/roadmap/save", {
+        const saveRes = await fetch("/api/roadmap/save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -119,6 +121,26 @@ export function RoadmapGenerator({
             moduleProjects,
           }),
         });
+        if (saveRes.ok) {
+          const saveJson = await saveRes.json();
+          const savedRoadmap = saveJson.roadmap;
+          const roadmapId =
+            (savedRoadmap && (savedRoadmap._id || savedRoadmap.id)) ||
+            saveJson.roadmapId ||
+            saveJson.insertedId;
+          if (savedRoadmap && roadmapId) {
+            try {
+              sessionStorage.setItem(
+                `savedRoadmap:${roadmapId}`,
+                JSON.stringify(savedRoadmap),
+              );
+            } catch (e) {
+              // ignore storage errors
+            }
+            router.push(`/roadmaps/${roadmapId}`);
+            return;
+          }
+        }
       }
       onRoadmapGenerated(roadmapData);
     } catch (e) {
