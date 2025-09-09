@@ -23,9 +23,10 @@ const nextConfig: NextConfig = {
     if (!isServer) {
       config.resolve = config.resolve || {};
       config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-        handlebars: "handlebars/dist/handlebars.runtime.js",
-      } as any;
+        ...config.resolve.alias,
+        "handlebars/runtime": "handlebars/dist/cjs/handlebars.runtime",
+        handlebars: "handlebars/dist/cjs/handlebars.runtime",
+      };
     }
     return config;
   },

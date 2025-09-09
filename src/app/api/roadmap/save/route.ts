@@ -13,6 +13,15 @@ export async function POST(req: NextRequest) {
   }
 
   // Validate session via next-auth JWT
+  // Avoid calling getToken when request headers are absent (Next's page-data collection can call routes without headers)
+  const hasAuthHeader =
+    typeof (req as any).headers?.get === "function" &&
+    ((req as any).headers.get("authorization") ||
+      (req as any).headers.get("cookie"));
+  if (!hasAuthHeader) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let token;
   try {
     token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
