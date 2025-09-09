@@ -15,6 +15,7 @@ import {
 import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
 import { toast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 const formSchema = z.object({
   desiredSkill: z.string().min(2, {
@@ -87,6 +88,8 @@ export function RoadmapGenerator({
     setModuleProjects((prev) => ({ ...prev, [moduleTitle]: ideas }));
   };
 
+  const { data: session } = useSession();
+
   const handleGenerate = async () => {
     setIsLoading(true);
     setError(null);
@@ -105,18 +108,7 @@ export function RoadmapGenerator({
       if (!res.ok) throw new Error("Failed to generate roadmap");
       const roadmapData: GenerateRoadmapOutput = await res.json();
       // Save roadmap to API with user ID and linked module projects if available
-      const session = (await import("next-auth/react")).useSession?.();
-      let userId = null;
-      if (
-        session &&
-        session.data &&
-        session.data.user &&
-        session.data.user.id
-      ) {
-        userId = session.data.user.id;
-      } else {
-        userId = null;
-      }
+      const userId = session?.user?.id ?? null;
       if (userId) {
         await fetch("/api/roadmap/save", {
           method: "POST",

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -163,6 +164,7 @@ const learningStyles = [
 ];
 
 export function RoadmapMain({ onRoadmapGenerated }: RoadmapMainProps) {
+  const { data: session } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [selectedSkill, setSelectedSkill] = useState("");
@@ -188,6 +190,20 @@ export function RoadmapMain({ onRoadmapGenerated }: RoadmapMainProps) {
       });
       if (!res.ok) throw new Error("Failed to generate roadmap");
       const roadmap: GenerateRoadmapOutput = await res.json();
+      // Attempt to save the generated roadmap for the signed-in user
+      try {
+        const userId = session?.user?.id ?? null;
+        if (userId) {
+          await fetch("/api/roadmap/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, roadmap }),
+          });
+        }
+      } catch (saveErr) {
+        console.error("Failed to save roadmap:", saveErr);
+      }
+
       onRoadmapGenerated(roadmap);
       toast({
         title: "🎉 Roadmap Created!",
