@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import { connectToDatabase } from "../../../../lib/mongodb";
 import { getToken } from "next-auth/jwt";
 
 export async function POST(req: NextRequest) {
@@ -57,9 +58,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const client = new MongoClient(uri);
     try {
-      await client.connect();
+      const client = await connectToDatabase();
       const db = client.db();
 
       // Example: update or insert roadmap document
@@ -72,8 +72,9 @@ export async function POST(req: NextRequest) {
         );
 
       return NextResponse.json({ success: true, result });
-    } finally {
-      await client.close().catch(() => {});
+    } catch (err) {
+      console.error("/api/roadmap/save DB error:", err);
+      return NextResponse.json({ error: "DB error" }, { status: 500 });
     }
   } catch (err: any) {
     console.error("/api/roadmap/save error:", err);

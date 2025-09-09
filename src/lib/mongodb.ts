@@ -1,16 +1,26 @@
 import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI!;
-let client: MongoClient;
-
+// Cached MongoClient to enable connection reuse and pooling across requests.
+// Read env inside the function to avoid build-time access.
 declare global {
   // eslint-disable-next-line no-var
-  var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongoClient: MongoClient | undefined;
 }
 
-if (!global._mongoClientPromise) {
-  client = new MongoClient(uri);
-  global._mongoClientPromise = client.connect();
+export async function connectToDatabase(): Promise<MongoClient> {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("MONGODB_URI not configured");
+  }
+
+  if (global._mongoClient) {
+    return global._mongoClient;
+  }
+
+  const client = new MongoClient(uri);
+  await client.connect();
+  global._mongoClient = client;
+  return client;
 }
 
-export default global._mongoClientPromise;
+export default connectToDatabase;

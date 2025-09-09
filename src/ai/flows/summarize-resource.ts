@@ -8,7 +8,7 @@
  * - SummarizeResourceOutput - The return type for the summarizeResource function.
  */
 
-import { ai } from "@/ai/genkit";
+import { getAI } from "@/ai/genkit";
 import { z } from "genkit";
 
 const SummarizeResourceInputSchema = z.object({
@@ -31,33 +31,35 @@ export type SummarizeResourceOutput = z.infer<
 export async function summarizeResource(
   input: SummarizeResourceInput,
 ): Promise<SummarizeResourceOutput> {
-  return summarizeResourceFlow(input);
-}
+  const ai = getAI();
 
-const prompt = ai.definePrompt({
-  name: "summarizeResourcePrompt",
-  input: { schema: SummarizeResourceInputSchema },
-  output: { schema: SummarizeResourceOutputSchema },
-  prompt: `You are an expert summarizer of learning resources.
+  const prompt = ai.definePrompt({
+    name: "summarizeResourcePrompt",
+    input: { schema: SummarizeResourceInputSchema },
+    output: { schema: SummarizeResourceOutputSchema },
+    prompt: `You are an expert summarizer of learning resources.
 
   Please provide a concise and informative summary of the following learning resource.
 
   Resource Text: {{{resourceText}}}
 
-  Summary:`, // Removed Handlebars `safeString` usage
-});
+  Summary:`,
+  });
 
-const summarizeResourceFlow = ai.defineFlow(
-  {
-    name: "summarizeResourceFlow",
-    inputSchema: SummarizeResourceInputSchema,
-    outputSchema: SummarizeResourceOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return {
-      ...output!,
-      progress: "The AI has generated a summary of the learning resource.",
-    };
-  },
-);
+  const summarizeResourceFlow = ai.defineFlow(
+    {
+      name: "summarizeResourceFlow",
+      inputSchema: SummarizeResourceInputSchema,
+      outputSchema: SummarizeResourceOutputSchema,
+    },
+    async (input) => {
+      const { output } = await prompt(input);
+      return {
+        ...output!,
+        progress: "The AI has generated a summary of the learning resource.",
+      };
+    },
+  );
+
+  return summarizeResourceFlow(input);
+}

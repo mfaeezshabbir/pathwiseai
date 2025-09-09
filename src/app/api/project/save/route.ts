@@ -1,20 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import connectToDatabase from "@/lib/mongodb";
 
 async function withDb<T>(fn: (db: any) => Promise<T>) {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    console.warn("MONGODB_URI not set; database operations will be skipped.");
-    throw new Error("MONGODB_URI not configured");
-  }
-  const client = new MongoClient(uri);
-  await client.connect();
-  try {
-    const db = client.db();
-    return await fn(db);
-  } finally {
-    await client.close();
-  }
+  const client = await connectToDatabase();
+  const db = client.db();
+  return await fn(db);
 }
 
 export async function POST(req: NextRequest) {

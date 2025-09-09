@@ -8,7 +8,7 @@
  * - GenerateRoadmapOutput - The return type for the generateRoadmap function.
  */
 
-import { ai } from "@/ai/genkit";
+import { getAI } from "@/ai/genkit";
 import { z } from "genkit";
 
 // Roadmap.sh-style schemas
@@ -69,14 +69,13 @@ export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 export async function generateRoadmap(
   input: GenerateRoadmapInput,
 ): Promise<GenerateRoadmapOutput> {
-  return generateRoadmapFlow(input);
-}
+  const ai = getAI();
 
-const prompt = ai.definePrompt({
-  name: "generateRoadmapPrompt",
-  input: { schema: GenerateRoadmapInputSchema },
-  output: { schema: GenerateRoadmapOutputSchema },
-  prompt: `You are a professional roadmap generator creating comprehensive learning paths for developers and tech professionals. Create a detailed, industry-standard roadmap based on the user's input.
+  const prompt = ai.definePrompt({
+    name: "generateRoadmapPrompt",
+    input: { schema: GenerateRoadmapInputSchema },
+    output: { schema: GenerateRoadmapOutputSchema },
+    prompt: `You are a professional roadmap generator creating comprehensive learning paths for developers and tech professionals. Create a detailed, industry-standard roadmap based on the user's input.
 
 **User Requirements:**
 - Desired Skill: {{{desiredSkill}}}
@@ -105,16 +104,19 @@ const prompt = ai.definePrompt({
 - Tag projects with relevant technologies and skills
 
 Generate a comprehensive roadmap with title, description, prerequisites, categories with subtopics, projects, next steps, and related roadmaps. Make it professional and actionable.`,
-});
+  });
 
-const generateRoadmapFlow = ai.defineFlow(
-  {
-    name: "generateRoadmapFlow",
-    inputSchema: GenerateRoadmapInputSchema,
-    outputSchema: GenerateRoadmapOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
-  },
-);
+  const generateRoadmapFlow = ai.defineFlow(
+    {
+      name: "generateRoadmapFlow",
+      inputSchema: GenerateRoadmapInputSchema,
+      outputSchema: GenerateRoadmapOutputSchema,
+    },
+    async (input) => {
+      const { output } = await prompt(input);
+      return output!;
+    },
+  );
+
+  return generateRoadmapFlow(input);
+}

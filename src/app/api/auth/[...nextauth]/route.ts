@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoClient } from "mongodb";
+import { connectToDatabase } from "../../../../lib/mongodb";
 import { compare } from "bcryptjs";
 
 // Extend the Session and User types to include 'id'
@@ -30,14 +31,14 @@ async function getUser(email: string) {
     return null;
   }
 
-  const client = new MongoClient(uri);
-  await client.connect();
   try {
+    const client = await connectToDatabase();
     const db = client.db();
     const user = await db.collection("users").findOne({ email });
     return user;
-  } finally {
-    await client.close();
+  } catch (err) {
+    console.warn("getUser DB error (auth):", err);
+    return null;
   }
 }
 

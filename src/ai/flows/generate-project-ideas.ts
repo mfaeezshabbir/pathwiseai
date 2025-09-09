@@ -8,7 +8,7 @@
  * - GenerateProjectIdeasOutput - The return type for the generateProjectIdeas function.
  */
 
-import { ai } from "@/ai/genkit";
+import { getAI } from "@/ai/genkit";
 import { z } from "genkit";
 
 const GenerateProjectIdeasInputSchema = z.object({
@@ -31,14 +31,13 @@ export type GenerateProjectIdeasOutput = z.infer<
 export async function generateProjectIdeas(
   input: GenerateProjectIdeasInput,
 ): Promise<GenerateProjectIdeasOutput> {
-  return generateProjectIdeasFlow(input);
-}
+  const ai = getAI();
 
-const prompt = ai.definePrompt({
-  name: "generateProjectIdeasPrompt",
-  input: { schema: GenerateProjectIdeasInputSchema },
-  output: { schema: GenerateProjectIdeasOutputSchema },
-  prompt: `You are an AI project idea generator, specializing in coming up with interesting and creative project ideas based on a user's skills.
+  const prompt = ai.definePrompt({
+    name: "generateProjectIdeasPrompt",
+    input: { schema: GenerateProjectIdeasInputSchema },
+    output: { schema: GenerateProjectIdeasOutputSchema },
+    prompt: `You are an AI project idea generator, specializing in coming up with interesting and creative project ideas based on a user's skills.
 
 You will be provided with a list of skills that the user has learned, and the name of their roadmap.
 
@@ -46,16 +45,19 @@ You must return a list of diverse project ideas that would allow the user to pra
 
 Skills: {{skills}}
 Roadmap: {{roadmapName}}`,
-});
+  });
 
-const generateProjectIdeasFlow = ai.defineFlow(
-  {
-    name: "generateProjectIdeasFlow",
-    inputSchema: GenerateProjectIdeasInputSchema,
-    outputSchema: GenerateProjectIdeasOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
-    return output!;
-  },
-);
+  const generateProjectIdeasFlow = ai.defineFlow(
+    {
+      name: "generateProjectIdeasFlow",
+      inputSchema: GenerateProjectIdeasInputSchema,
+      outputSchema: GenerateProjectIdeasOutputSchema,
+    },
+    async (input) => {
+      const { output } = await prompt(input);
+      return output!;
+    },
+  );
+
+  return generateProjectIdeasFlow(input);
+}

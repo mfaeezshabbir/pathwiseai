@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
+import connectToDatabase from "@/lib/mongodb";
 import { getToken } from "next-auth/jwt";
 
 export async function POST(req: NextRequest) {
-  const uri = process.env.MONGODB_URI!;
+  const uri = process.env.MONGODB_URI;
   if (!uri) {
     return NextResponse.json({ error: "MONGODB_URI not set" }, { status: 500 });
   }
-  const client = new MongoClient(uri);
+  const client = await connectToDatabase();
 
   const body = await req.json();
   const { roadmap, moduleProjects } = body;
@@ -38,41 +39,43 @@ export async function POST(req: NextRequest) {
 
   const userId = token.id as string;
 
-  await client.connect();
-  const db = client.db();
-  // Save roadmap with modules and optionally linked projects per module
-  const roadmapDoc = {
-    userId: new ObjectId(userId),
-    ...roadmap,
-    modules: roadmap.modules?.map((mod: any) => ({
-      ...mod,
-      linkedProjects: moduleProjects?.[mod.title] || [],
-    })),
-    createdAt: new Date(),
-  };
-  const result = await db.collection("roadmaps").insertOne(roadmapDoc);
-  // Prepare saved roadmap for response (stringify ObjectIds)
-  const savedRoadmap = {
-    ...roadmapDoc,
-    _id: String(result.insertedId),
-    userId: String(roadmapDoc.userId),
-  };
-  return NextResponse.json({ success: true, roadmap: savedRoadmap });
+  try {
+    const db = client.db();
+    // Save roadmap with modules and optionally linked projects per module
+    const roadmapDoc = {
+      userId: new ObjectId(userId),
+      ...roadmap,
+      modules: roadmap.modules?.map((mod: any) => ({
+        ...mod,
+        linkedProjects: moduleProjects?.[mod.title] || [],
+      })),
+      createdAt: new Date(),
+    };
+    const result = await db.collection("roadmaps").insertOne(roadmapDoc);
+    // Prepare saved roadmap for response (stringify ObjectIds)
+    const savedRoadmap = {
+      ...roadmapDoc,
+      _id: String(result.insertedId),
+      userId: String(roadmapDoc.userId),
+    };
+    return NextResponse.json({ success: true, roadmap: savedRoadmap });
+  } finally {
+    // keep client open for connection reuse
+  }
 }
 
 export async function GET(req: NextRequest) {
-  const uri = process.env.MONGODB_URI!;
+  const uri = process.env.MONGODB_URI;
   if (!uri) {
     return NextResponse.json({ error: "MONGODB_URI not set" }, { status: 500 });
   }
-  const client = new MongoClient(uri);
+  const client = await connectToDatabase();
 
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
   if (!userId) {
     return NextResponse.json({ error: "Missing userId" }, { status: 400 });
   }
-  await client.connect();
   const db = client.db();
   const roadmaps = await db
     .collection("roadmaps")

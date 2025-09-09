@@ -8,9 +8,9 @@
  * - AIAssistantTutorOutput - The return type for the aiAssistantTutor function.
  */
 
-import { ai } from "@/ai/genkit";
+import { getAI } from "@/ai/genkit";
 import { z } from "genkit";
-import { suggestRoadmapTool } from "./suggest-roadmap";
+import { createSuggestRoadmapTool } from "./suggest-roadmap";
 
 const AIAssistantTutorInputSchema = z.object({
   question: z
@@ -48,15 +48,15 @@ export type AIAssistantTutorOutput = z.infer<
 export async function aiAssistantTutor(
   input: AIAssistantTutorInput,
 ): Promise<AIAssistantTutorOutput> {
-  return aiAssistantTutorFlow(input);
-}
+  const ai = getAI();
+  const suggestRoadmapTool = createSuggestRoadmapTool(ai);
 
-const prompt = ai.definePrompt({
-  name: "aiAssistantTutorPrompt",
-  input: { schema: AIAssistantTutorInputSchema },
-  output: { schema: AIAssistantTutorOutputSchema },
-  tools: [suggestRoadmapTool],
-  prompt: `You are an AI assistant and expert learning tutor. Your goal is to provide clear, helpful answers to user questions.
+  const prompt = ai.definePrompt({
+    name: "aiAssistantTutorPrompt",
+    input: { schema: AIAssistantTutorInputSchema },
+    output: { schema: AIAssistantTutorOutputSchema },
+    tools: [suggestRoadmapTool],
+    prompt: `You are an AI assistant and expert learning tutor. Your goal is to provide clear, helpful answers to user questions.
 
 - If the user asks for learning advice, recommendations on what to learn, or how to start with a new technology (e.g., "what should I learn for web dev?", "teach me python"), you MUST use the \`suggestRoadmapTool\` to suggest technologies they can generate a roadmap for.
 - For each distinct technology or skill you recommend, call the \`suggestRoadmapTool\` tool. For example, if you suggest learning HTML, CSS, and JavaScript, you should call the tool three times, once for each.
@@ -65,30 +65,33 @@ const prompt = ai.definePrompt({
 
 User Question:
 {{question}}`,
-});
+  });
 
-const aiAssistantTutorFlow = ai.defineFlow(
-  {
-    name: "aiAssistantTutorFlow",
-    inputSchema: AIAssistantTutorInputSchema,
-    outputSchema: AIAssistantTutorOutputSchema,
-  },
-  async (input) => {
-    const { output } = await prompt(input);
+  const aiAssistantTutorFlow = ai.defineFlow(
+    {
+      name: "aiAssistantTutorFlow",
+      inputSchema: AIAssistantTutorInputSchema,
+      outputSchema: AIAssistantTutorOutputSchema,
+    },
+    async (input) => {
+      const { output } = await prompt(input);
 
-    // The model output now directly matches our desired schema if it uses the tool correctly.
-    if (output) {
-      return output;
-    }
+      // The model output now directly matches our desired schema if it uses the tool correctly.
+      if (output) {
+        return output;
+      }
 
-    // Fallback for when the model doesn't use the tool and just returns text.
-    return {
-      answer: [
-        {
-          type: "text" as const,
-          text: "An unexpected error occurred. Please try again.",
-        },
-      ],
-    };
-  },
-);
+      // Fallback for when the model doesn't use the tool and just returns text.
+      return {
+        answer: [
+          {
+            type: "text" as const,
+            text: "An unexpected error occurred. Please try again.",
+          },
+        ],
+      };
+    },
+  );
+
+  return aiAssistantTutorFlow(input);
+}
