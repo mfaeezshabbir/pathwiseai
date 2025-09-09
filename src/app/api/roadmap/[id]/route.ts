@@ -25,6 +25,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Check for NEXTAUTH_SECRET inside the handler
+    if (!process.env.NEXTAUTH_SECRET) {
+      console.error("Missing NEXTAUTH_SECRET");
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 },
+      );
+    }
+
     let token;
     try {
       token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -38,6 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Check for MONGODB_URI inside the handler
     const uri = process.env.MONGODB_URI;
     if (!uri || typeof uri !== "string" || !uri.startsWith("mongodb")) {
       console.error("Missing or invalid MONGODB_URI");

@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { MongoClient, ObjectId } from "mongodb";
 import { getToken } from "next-auth/jwt";
 
-const uri = process.env.MONGODB_URI!;
-const client = new MongoClient(uri);
-
 export async function POST(req: NextRequest) {
+  const uri = process.env.MONGODB_URI!;
+  if (!uri) {
+    return NextResponse.json({ error: "MONGODB_URI not set" }, { status: 500 });
+  }
+  const client = new MongoClient(uri);
+
   const body = await req.json();
   const { roadmap, moduleProjects } = body;
   if (!roadmap) {
@@ -58,6 +61,12 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const uri = process.env.MONGODB_URI!;
+  if (!uri) {
+    return NextResponse.json({ error: "MONGODB_URI not set" }, { status: 500 });
+  }
+  const client = new MongoClient(uri);
+
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
   if (!userId) {
