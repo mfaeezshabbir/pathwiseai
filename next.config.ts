@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -19,15 +18,20 @@ const nextConfig: NextConfig = {
     ],
   },
   webpack: (config, { isServer }) => {
-    // Alias full Handlebars to the runtime build on the client to avoid require.extensions usage
-    if (!isServer) {
-      config.resolve = config.resolve || {};
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        "handlebars/runtime": "handlebars/dist/cjs/handlebars.runtime",
-        handlebars: "handlebars/dist/cjs/handlebars.runtime",
-      };
-    }
+    // Alias Handlebars to the ESM/cjs builds that don't use require.extensions
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "handlebars/runtime": "handlebars/dist/cjs/handlebars.runtime.js",
+      handlebars: "handlebars/dist/cjs/handlebars.js",
+    };
+
+    // Suppress specific require.extensions warnings from Handlebars
+    config.ignoreWarnings = [
+      { module: /handlebars/ },
+      ...(config.ignoreWarnings || []),
+    ];
+
     return config;
   },
 };
