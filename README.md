@@ -2,7 +2,7 @@
 
 PathWise AI is a personalized learning roadmap generator powered by AI. It helps users create tailored learning paths for any skill, track their progress, and stay motivated with gamified features and an AI tutor.
 
-![PathWise AI Dashboard](https://placehold.co/800x400.png)
+<img width="1920" height="1200" alt="image" src="https://github.com/user-attachments/assets/94070ecf-bc5f-42c1-ab87-9549b780a2fe" />
 
 ## ✨ Features
 
