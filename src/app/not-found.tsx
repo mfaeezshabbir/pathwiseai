@@ -1,26 +1,33 @@
-"use client";
-
 import Link from "next/link";
+import { ArrowLeft, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Rocket } from "lucide-react";
-
-// filepath: /home/mfaeezshabbir/pp/pathwiseai/src/app/not-found.tsx
 
 export default function NotFound() {
   return (
-    <div className="flex h-[70vh] flex-col items-center justify-center px-4">
-      <div className="flex flex-col items-center gap-4">
-        <Rocket className="h-16 w-16 text-indigo-500" />
-        <h1 className="text-4xl font-bold text-indigo-700 dark:text-indigo-300">
-          404 – Page Not Found
+    <div className="relative isolate flex min-h-[70vh] items-center justify-center px-4">
+      <div className="bg-grid mask-fade-b absolute inset-0 -z-10" />
+      <div className="max-w-md text-center">
+        <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+          <Compass className="size-6" />
+        </span>
+        <p className="mt-6 font-mono text-sm text-primary">404</p>
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+          This path doesn&rsquo;t exist
         </h1>
-        <p className="max-w-md text-center text-lg text-muted-foreground">
-          Oops! The page you&apos;re looking for doesn&apos;t exist or has been
-          moved.
+        <p className="mt-3 text-muted-foreground">
+          The page you&rsquo;re looking for was moved, deleted, or never
+          existed.
         </p>
-        <Button asChild className="mt-4">
-          <Link href="/">Go back home</Link>
-        </Button>
+        <div className="mt-8 flex flex-col justify-center gap-2 sm:flex-row">
+          <Button asChild>
+            <Link href="/">
+              <ArrowLeft /> Back home
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/roadmaps/new">Create a roadmap</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

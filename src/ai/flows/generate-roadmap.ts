@@ -63,6 +63,7 @@ const GenerateRoadmapInputSchema = z.object({
   knowledgeLevel: z.string(),
   availableTime: z.string(),
   learningStyle: z.string().optional(),
+  specificGoals: z.string().optional(),
 });
 export type GenerateRoadmapInput = z.infer<typeof GenerateRoadmapInputSchema>;
 
@@ -82,7 +83,8 @@ export async function generateRoadmap(
 - Current Level: {{{knowledgeLevel}}}
 - Time Available: {{{availableTime}}} per week
 - Learning Style: {{{learningStyle}}}
-
+{{#if specificGoals}}- Specific Goals: {{{specificGoals}}}
+{{/if}}
 **Quality Standards:**
 1. **Professional Content**: Use industry-standard terminology and current best practices
 2. **Real Resources**: Include actual URLs to high-quality learning materials (MDN, official docs, reputable courses)

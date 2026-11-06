@@ -1,85 +1,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import connectToDatabase from "@/lib/mongodb";
-import { getToken } from "next-auth/jwt";
+import { getUserId } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
+  if (!process.env.MONGODB_URI) {
     return NextResponse.json({ error: "MONGODB_URI not set" }, { status: 500 });
   }
-  const client = await connectToDatabase();
 
-  const body = await req.json();
-  const { roadmap, moduleProjects } = body;
-  if (!roadmap) {
+  const userId = await getUserId(req);
+  if (!userId || !ObjectId.isValid(userId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { roadmap, preferences } = await req.json();
+  if (!roadmap || !Array.isArray(roadmap.categories)) {
     return NextResponse.json({ error: "Missing roadmap" }, { status: 400 });
   }
 
-  // Validate session via next-auth JWT
-  // Avoid calling getToken when request headers are absent (Next's page-data collection can call routes without headers)
-  const hasAuthHeader =
-    typeof (req as any).headers?.get === "function" &&
-    ((req as any).headers.get("authorization") ||
-      (req as any).headers.get("cookie"));
-  if (!hasAuthHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let token;
   try {
-    token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  } catch (err) {
-    console.error("/api/roadmap/save getToken error:", err);
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (!token || !token.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = token.id as string;
-
-  try {
-    const db = client.db();
-    // Save roadmap with modules and optionally linked projects per module
+    const client = await connectToDatabase();
+    const now = new Date();
     const roadmapDoc = {
-      userId: new ObjectId(userId),
       ...roadmap,
-      modules: roadmap.modules?.map((mod: any) => ({
-        ...mod,
-        linkedProjects: moduleProjects?.[mod.title] || [],
-      })),
-      createdAt: new Date(),
+      userId: new ObjectId(userId),
+      preferences: preferences ?? null,
+      progress: {},
+      progressPercent: 0,
+      createdAt: now,
+      updatedAt: now,
     };
-    const result = await db.collection("roadmaps").insertOne(roadmapDoc);
-    // Prepare saved roadmap for response (stringify ObjectIds)
-    const savedRoadmap = {
-      ...roadmapDoc,
-      _id: String(result.insertedId),
-      userId: String(roadmapDoc.userId),
-    };
-    return NextResponse.json({ success: true, roadmap: savedRoadmap });
-  } finally {
-    // keep client open for connection reuse
+    const result = await client.db().collection("roadmaps").insertOne(roadmapDoc);
+    return NextResponse.json({
+      success: true,
+      roadmap: {
+        ...roadmapDoc,
+        _id: String(result.insertedId),
+        userId,
+      },
+    });
+  } catch (err) {
+    console.error("/api/roadmap/save POST error:", err);
+    return NextResponse.json({ error: "DB error" }, { status: 500 });
   }
 }
 
+/** List the signed-in user's roadmaps, newest first. */
 export async function GET(req: NextRequest) {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
+  if (!process.env.MONGODB_URI) {
     return NextResponse.json({ error: "MONGODB_URI not set" }, { status: 500 });
   }
-  const client = await connectToDatabase();
 
-  const { searchParams } = new URL(req.url);
-  const userId = searchParams.get("userId");
-  if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  const userId = await getUserId(req);
+  if (!userId || !ObjectId.isValid(userId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const db = client.db();
-  const roadmaps = await db
-    .collection("roadmaps")
-    .find({ userId: new ObjectId(userId) })
-    .toArray();
-  return NextResponse.json({ roadmaps });
+
+  try {
+    const client = await connectToDatabase();
+    const docs = await client
+      .db()
+      .collection("roadmaps")
+      .find({ userId: new ObjectId(userId) })
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .toArray();
+    const roadmaps = docs.map((d) => ({
+      ...d,
+      _id: String(d._id),
+      userId: String(d.userId),
+    }));
+    return NextResponse.json({ roadmaps });
+  } catch (err) {
+    console.error("/api/roadmap/save GET error:", err);
+    return NextResponse.json({ error: "DB error" }, { status: 500 });
+  }
 }

@@ -24,7 +24,7 @@ for file in $ALL_FILES; do
 done
 
 # Run lint on all files
-npx next lint --fix --file $ALL_FILES
+npx eslint --fix $(echo "$ALL_FILES" | grep -E '\.(js|jsx|ts|tsx)$') || true
 
 # Add any files that were fixed by lint
 for file in $ALL_FILES; do

@@ -1,38 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Self-contained server bundle for the Docker image
+  output: "standalone",
+  // Genkit pulls in handlebars (via dotprompt), which relies on
+  // require.extensions and cannot be bundled. Load it from node_modules instead.
+  serverExternalPackages: [
+    "genkit",
+    "@genkit-ai/core",
+    "@genkit-ai/ai",
+    "@genkit-ai/google-genai",
+    "handlebars",
+    "dotprompt",
+  ],
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "placehold.co",
-        port: "",
-        pathname: "/**",
-      },
+      { protocol: "https", hostname: "placehold.co", pathname: "/**" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "avatars.githubusercontent.com" },
     ],
-  },
-  webpack: (config, { isServer }) => {
-    // Alias Handlebars to the ESM/cjs builds that don't use require.extensions
-    config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "handlebars/runtime": "handlebars/dist/cjs/handlebars.runtime.js",
-      handlebars: "handlebars/dist/cjs/handlebars.js",
-    };
-
-    // Suppress specific require.extensions warnings from Handlebars
-    config.ignoreWarnings = [
-      { module: /handlebars/ },
-      ...(config.ignoreWarnings || []),
-    ];
-
-    return config;
   },
 };
 

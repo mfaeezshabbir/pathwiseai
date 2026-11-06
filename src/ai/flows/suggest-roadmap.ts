@@ -1,10 +1,8 @@
-"use server";
-
 /**
  * @fileOverview A Genkit tool that allows the AI to suggest generating a roadmap for a specific skill.
  */
 
-import { z } from "zod";
+import { z } from "genkit";
 
 export function createSuggestRoadmapTool(ai: any) {
   return ai.defineTool(

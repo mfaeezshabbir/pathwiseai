@@ -1,60 +1,63 @@
-import { Toaster } from "@/components/ui/toaster";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { AppNavbar } from "@/components/common/AppNavbar";
-import { AppFooter } from "@/components/common/AppFooter";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { AssistantLauncher } from "@/components/ai/ai-tutor";
 import { Providers } from "./providers";
 
 import "./globals.css";
 
-import type { Metadata } from "next";
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+});
 
 export const metadata: Metadata = {
-  title: "PathwiseAI",
-  description:
-    "PathwiseAI - Personalized AI-powered learning roadmaps and tutoring.",
-  icons: {
-    icon: "/assets/pathwiseai_logo.png",
+  title: {
+    default: "PathwiseAI — Personalized learning roadmaps",
+    template: "%s · PathwiseAI",
   },
+  description:
+    "Generate a personalized, step-by-step learning roadmap for any skill, track your progress, and get unstuck with an AI tutor.",
+  icons: { icon: "/assets/pathwiseai_logo.png" },
 };
 
-export const viewport = {
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fcfcfd" },
+    { media: "(prefers-color-scheme: dark)", color: "#121118" },
+  ],
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="relative flex min-h-screen flex-col bg-black font-body text-gray-900 antialiased dark:text-gray-100">
-        {/* Light Sphere Grid Background */}
-        <div
-          className="absolute inset-0 z-0 dark:hidden"
-          style={{
-            background: "white",
-            backgroundImage: `
-              linear-gradient(to right, rgba(71,85,105,0.3) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(71,85,105,0.3) 1px, transparent 1px),
-              radial-gradient(circle at 50% 50%, rgba(139,92,246,0.25) 0%, rgba(139,92,246,0.1) 40%, transparent 80%)
-            `,
-            backgroundSize: "32px 32px, 32px 32px, 100% 100%",
-          }}
-        />
-        div
-        {/* Dark Sphere Grid Background */}
-        <div
-          className="absolute inset-0 z-0 hidden dark:block"
-          style={{
-            background: "#020617",
-            backgroundImage: `
-              linear-gradient(to right, rgba(71,85,105,0.3) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(71,85,105,0.3) 1px, transparent 1px),
-              radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 70%)
-            `,
-            backgroundSize: "32px 32px, 32px 32px, 100% 100%",
-          }}
-        />
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
+    >
+      <body className="flex min-h-dvh flex-col font-sans">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-2 focus:text-sm focus:text-primary-foreground"
+        >
+          Skip to content
+        </a>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -62,19 +65,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Providers>
-            {/* Navbar */}
-            <AppNavbar />
-            {/* Main Content */}
-            <main className="relative z-10 mx-auto w-full max-w-[90rem] flex-1 px-4 py-10 md:px-12">
-              {children}
-            </main>
-            {/* Footer */}
-            <AppFooter />
+            <TooltipProvider delayDuration={200}>
+              <SiteHeader />
+              <main id="main" className="flex-1">
+                {children}
+              </main>
+              <SiteFooter />
+              <AssistantLauncher />
+              <Toaster position="bottom-center" richColors closeButton />
+            </TooltipProvider>
           </Providers>
-          {/* Toaster for notifications */}
-          <div className="fixed right-4 top-4 z-[9999]">
-            <Toaster />
-          </div>
         </ThemeProvider>
       </body>
     </html>

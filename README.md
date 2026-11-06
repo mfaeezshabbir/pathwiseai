@@ -17,10 +17,10 @@ PathWise AI is a personalized learning roadmap generator powered by AI. It helps
 
 ## 🛠️ Tech Stack
 
-- **Framework:** [Next.js](https://nextjs.org/) (React)
-- **Generative AI:** [Google AI & Genkit](https://firebase.google.com/docs/genkit)
-- **UI:** [Tailwind CSS](https://tailwindcss.com/) & [ShadCN UI](https://ui.shadcn.com/)
-- **Styling:** CSS-in-JS with Tailwind CSS
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack) & React 19
+- **Generative AI:** [Genkit](https://genkit.dev/) with the Google GenAI plugin (Gemini)
+- **UI:** [Tailwind CSS v4](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/) (Radix UI)
+- **Auth & data:** NextAuth (credentials) & MongoDB
 - **Language:** TypeScript
 
 ## 🚀 Getting Started
@@ -29,50 +29,52 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ### Prerequisites
 
-/home/user/studio/src
+- Node.js 20.9+ (Next.js 16 requirement)
+- Docker Desktop (for the local MongoDB)
+- [MongoDB Compass](https://www.mongodb.com/products/compass) (optional, to browse the data)
 
-- Node.js (v18 or later recommended)
-- npm, yarn, or pnpm
+### Setup
 
-### Installation
+```bash
+git clone https://github.com/mfaeezshabbir/pathwiseai.git
+cd pathwiseai
+npm install
+cp .env.example .env      # then fill in GEMINI_API_KEY and NEXTAUTH_SECRET
+npm run db:up             # start MongoDB in Docker
+npm run db:seed           # create indexes + a local test user
+npm run dev               # http://localhost:9002
+```
 
-1.  **Clone the repository:**
+The seeded test account (`test@pathwise.local`) is defined in `scripts/db-setup.mjs`. It's for local development only.
 
-    ```bash
-    git clone https://github.com/mfaeezshabbir/pathwiseai.git
-    cd pathwiseai
-    ```
+### Database scripts
 
-2.  **Install dependencies:**
+| Command | What it does |
+| --- | --- |
+| `npm run db:up` | Start MongoDB 8 in Docker (data persists in a named volume) |
+| `npm run db:down` | Stop the containers (data is kept) |
+| `npm run db:logs` | Follow MongoDB logs |
+| `npm run db:setup` | Ensure indexes and run data migrations (safe to re-run) |
+| `npm run db:seed` | `db:setup` plus the local test user |
+| `npm run db:compass` | Open MongoDB Compass connected to `MONGODB_URI` |
 
-    ```bash
-    npm install
-    ```
+To connect Compass manually, paste the `MONGODB_URI` from your `.env` into a new connection.
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root of your project and add your Google AI API key:
-    ```env
-    GOOGLE_API_KEY=your_google_api_key_here
-    ```
+### Running the whole stack in Docker
 
-### Running the Application
+```bash
+npm run docker:app        # builds the app image and starts app + MongoDB
+```
 
-1.  **Start the development server:**
-    This command starts the Next.js application.
+The production build is served at [http://localhost:3000](http://localhost:3000). To wipe the local database, run `docker compose down -v`.
 
-    ```bash
-    npm run dev
-    ```
+### Genkit developer UI (optional)
 
-2.  **Start the Genkit AI server:**
-    In a separate terminal, start the Genkit development server to enable the AI features.
+AI flows run inside the Next.js server, so this isn't required. To inspect and test flows in the Genkit UI:
 
-    ```bash
-    npm run genkit:dev
-    ```
-
-3.  **Open your browser:**
-    Navigate to [http://localhost:9002](http://localhost:9002) to see the application in action.
+```bash
+npm run genkit:dev
+```
 
 ## 📝 To-Do / Future Enhancements
 

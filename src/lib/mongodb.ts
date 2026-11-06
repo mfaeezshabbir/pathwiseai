@@ -3,7 +3,6 @@ import { MongoClient } from "mongodb";
 // Cached MongoClient to enable connection reuse and pooling across requests.
 // Read env inside the function to avoid build-time access.
 declare global {
-  // eslint-disable-next-line no-var
   var _mongoClient: MongoClient | undefined;
 }
 

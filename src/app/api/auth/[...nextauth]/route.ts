@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { MongoClient } from "mongodb";
-import { connectToDatabase } from "../../../../lib/mongodb";
+import { connectToDatabase } from "@/lib/mongodb";
 import { compare } from "bcryptjs";
 
 // Extend the Session and User types to include 'id'
@@ -34,7 +33,10 @@ async function getUser(email: string) {
   try {
     const client = await connectToDatabase();
     const db = client.db();
-    const user = await db.collection("users").findOne({ email });
+    const raw = email.trim();
+    const user = await db
+      .collection("users")
+      .findOne({ email: { $in: [raw, raw.toLowerCase()] } });
     return user;
   } catch (err) {
     console.warn("getUser DB error (auth):", err);
@@ -62,8 +64,12 @@ const handler = NextAuth({
   ],
   session: { strategy: "jwt" },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) token.id = user.id;
+      // Keep the cached name in sync after a profile edit
+      if (trigger === "update" && typeof session?.name === "string") {
+        token.name = session.name;
+      }
       return token;
     },
     async session({ session, token }) {

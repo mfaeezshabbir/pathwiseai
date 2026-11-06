@@ -1,298 +1,200 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useSession, signIn } from "next-auth/react";
-import { filterRoadmaps } from "./utils/filterRoadmaps";
-import type { GenerateRoadmapOutput } from "@/ai/flows/generate-roadmap";
-import { RoadmapGeneratorCard } from "@/components/roadmaps/RoadmapGeneratorCard";
-import { RoadmapListCard } from "@/components/roadmaps/RoadmapListCard";
-import { RoadmapMain } from "@/components/roadmaps/RoadmapMain";
+
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { CheckCircle2, Map as MapIcon, Plus, Search, Timer, TrendingUp } from "lucide-react";
+
+import { roadmapPercent, type SavedRoadmap } from "@/lib/roadmap";
+import { cn } from "@/lib/utils";
+import { useRequireAuth } from "@/hooks/use-require-auth";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { HeroSection } from "./components/HeroSection";
-import { QuickStats } from "./components/QuickStats";
-import { ContinueLearning } from "./components/ContinueLearning";
-import { QuickActions } from "./components/QuickActions";
-import { RoadmapsGridList } from "./components/RoadmapsGridList";
-import {
-  Brain,
-  Grid3X3,
-  List,
-  Plus,
-  Search,
-  Target,
-  TrendingUp,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/common/page-header";
+import { EmptyState } from "@/components/common/empty-state";
+import { RoadmapCard } from "@/components/roadmap/roadmap-card";
+
+const filters = ["All", "In progress", "Not started", "Completed"] as const;
+type Filter = (typeof filters)[number];
+
+function matches(filter: Filter, percent: number) {
+  if (filter === "In progress") return percent > 0 && percent < 100;
+  if (filter === "Not started") return percent === 0;
+  if (filter === "Completed") return percent === 100;
+  return true;
+}
 
 export default function RoadmapsPage() {
-  const { data: session, status } = useSession();
-
-  // Enhanced mock data with more comprehensive information
-  const mockRoadmaps = [
-    {
-      id: "1",
-      title: "Advanced React and Next.js",
-      description:
-        "Master modern React patterns, Next.js 14, and full-stack development",
-      progress: 75,
-      modules: 15,
-      totalHours: 120,
-      difficulty: "Advanced",
-      category: "Frontend",
-      tags: ["React", "Next.js", "TypeScript", "Full-stack"],
-      enrolled: 1250,
-      rating: 4.8,
-      lastAccessed: "2 days ago",
-      estimatedCompletion: "3 weeks",
-      thumbnail:
-        "http://localhost:9002/_next/image?url=%2Fassets%2Fpathwiseai_logo.png&w=48&q=75",
-    },
-    // ...rest of mockRoadmaps...
-  ];
-
-  const categories = [
-    "All",
-    "Frontend",
-    "Backend",
-    "Data Science",
-    "Mobile",
-    "DevOps",
-    "AI/ML",
-  ];
-  const difficulties = ["All", "Beginner", "Intermediate", "Advanced"];
-
-  const [roadmapData, setRoadmapData] = useState<GenerateRoadmapOutput | null>(
-    null,
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedDifficulty, setSelectedDifficulty] = useState("All");
-  const [filteredRoadmaps, setFilteredRoadmaps] = useState(mockRoadmaps);
+  const { session, ready } = useRequireAuth();
+  const [roadmaps, setRoadmaps] = useState<SavedRoadmap[] | null>(null);
+  const [error, setError] = useState(false);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>("All");
 
   useEffect(() => {
-    if (status !== "loading" && !session) signIn();
-  }, [session, status]);
+    if (!ready) return;
+    fetch("/api/roadmap/save")
+      .then((r) => (r.ok ? r.json() : Promise.reject(r)))
+      .then((data) => setRoadmaps(data.roadmaps ?? []))
+      .catch(() => {
+        setError(true);
+        setRoadmaps([]);
+      });
+  }, [ready]);
 
-  // Filter roadmaps based on search and filters
-  useEffect(() => {
-    setFilteredRoadmaps(
-      filterRoadmaps(
-        mockRoadmaps,
-        searchQuery,
-        selectedCategory,
-        selectedDifficulty,
-      ),
+  const stats = useMemo(() => {
+    const list = roadmaps ?? [];
+    const percents = list.map(roadmapPercent);
+    return {
+      total: list.length,
+      active: percents.filter((p) => p > 0 && p < 100).length,
+      completed: percents.filter((p) => p === 100).length,
+      average: list.length
+        ? Math.round(percents.reduce((a, b) => a + b, 0) / list.length)
+        : 0,
+    };
+  }, [roadmaps]);
+
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (roadmaps ?? []).filter(
+      (r) =>
+        matches(filter, roadmapPercent(r)) &&
+        (!q ||
+          r.title.toLowerCase().includes(q) ||
+          r.description?.toLowerCase().includes(q)),
     );
-  }, [searchQuery, selectedCategory, selectedDifficulty]);
+  }, [roadmaps, query, filter]);
 
-  if (status === "loading" || !session) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  // Only signed-in users can generate roadmaps or view this page
-  // ...existing UI code below...
-
-  const handleReset = () => setRoadmapData(null);
-
-  const handleNewRoadmap = () => {
-    setRoadmapData(null);
-    setOpen(true);
-  };
-
-  const handleRoadmapGenerated = (data: GenerateRoadmapOutput | null) => {
-    setRoadmapData(data);
-    setOpen(false);
-  };
-
-  const inProgressRoadmaps = filteredRoadmaps.filter(
-    (r) => r.progress > 0 && r.progress < 100,
-  );
-  const completedRoadmaps = filteredRoadmaps.filter((r) => r.progress === 100);
-  const notStartedRoadmaps = filteredRoadmaps.filter((r) => r.progress === 0);
+  const firstName = session?.user?.name?.split(" ")[0];
+  const loading = !ready || roadmaps === null;
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      {/* <HeroSection
-        onCreate={handleNewRoadmap}
-        onExplore={() => setActiveTab("explore")}
-        isLoading={isLoading}
-      /> */}
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+      <PageHeader
+        eyebrow="Dashboard"
+        title={firstName ? `Welcome back, ${firstName}` : "Your roadmaps"}
+        description="Pick up where you left off, or start something new."
+        actions={
+          <Button asChild>
+            <Link href="/roadmaps/new">
+              <Plus /> New roadmap
+            </Link>
+          </Button>
+        }
+      />
 
-      {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-6 py-12">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mx-auto mb-8 grid w-full grid-cols-4 lg:w-[600px]">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="explore" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              Explore
-            </TabsTrigger>
-            <TabsTrigger value="create" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-          </TabsList>
+      <dl className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          { label: "Roadmaps", value: stats.total, icon: MapIcon },
+          { label: "In progress", value: stats.active, icon: Timer },
+          { label: "Completed", value: stats.completed, icon: CheckCircle2 },
+          { label: "Avg. progress", value: `${stats.average}%`, icon: TrendingUp },
+        ].map(({ label, value, icon: Icon }) => (
+          <div key={label} className="rounded-2xl border bg-card p-4 sm:p-5">
+            <dt className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Icon className="size-4" /> {label}
+            </dt>
+            <dd className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">
+              {loading ? <Skeleton className="h-8 w-12" /> : value}
+            </dd>
+          </div>
+        ))}
+      </dl>
 
-          {/* Dashboard Tab */}
-          <TabsContent value="dashboard" className="space-y-8">
-            {/* Quick Stats */}
-            <QuickStats
-              inProgress={inProgressRoadmaps.length}
-              completed={completedRoadmaps.length}
-              totalHours={mockRoadmaps.reduce(
-                (acc, r) => acc + r.totalHours,
-                0,
-              )}
+      {(loading || (roadmaps?.length ?? 0) > 0) && (
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            role="tablist"
+            aria-label="Filter roadmaps"
+            className="scrollbar-none -mx-4 flex gap-1 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+          >
+            {filters.map((f) => (
+              <button
+                key={f}
+                role="tab"
+                aria-selected={filter === f}
+                onClick={() => setFilter(f)}
+                className={cn(
+                  "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
+                  filter === f
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+          <div className="relative sm:w-72">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search roadmaps"
+              aria-label="Search roadmaps"
+              className="pl-9"
             />
+          </div>
+        </div>
+      )}
 
-            {/* Continue Learning Section */}
-            <ContinueLearning inProgressRoadmaps={inProgressRoadmaps} />
-
-            {/* Quick Actions */}
-            <QuickActions
-              onCreate={handleNewRoadmap}
-              onExplore={() => setActiveTab("explore")}
-              onAnalytics={() => setActiveTab("analytics")}
-            />
-          </TabsContent>
-
-          {/* Explore Tab */}
-          <TabsContent value="explore" className="space-y-6">
-            {/* Search and Filters */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col gap-4 lg:flex-row">
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Search roadmaps, technologies, or topics..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <select
-                      value={selectedCategory}
-                      onChange={(e) => setSelectedCategory(e.target.value)}
-                      className="rounded-md border bg-background px-3 py-2"
-                    >
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      value={selectedDifficulty}
-                      onChange={(e) => setSelectedDifficulty(e.target.value)}
-                      className="rounded-md border bg-background px-3 py-2"
-                    >
-                      {difficulties.map((diff) => (
-                        <option key={diff} value={diff}>
-                          {diff}
-                        </option>
-                      ))}
-                    </select>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setViewMode(viewMode === "grid" ? "list" : "grid")
-                      }
-                    >
-                      {viewMode === "grid" ? (
-                        <List className="h-4 w-4" />
-                      ) : (
-                        <Grid3X3 className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Roadmaps Grid/List */}
-            <RoadmapsGridList roadmaps={filteredRoadmaps} viewMode={viewMode} />
-          </TabsContent>
-
-          {/* Create Tab */}
-          <TabsContent value="create">
-            {roadmapData ? (
-              <RoadmapGeneratorCard
-                roadmapData={roadmapData}
-                setRoadmapData={setRoadmapData}
-                isLoading={isLoading}
-                setIsLoading={setIsLoading}
-                error={error}
-                setError={setError}
-                onReset={handleReset}
-              />
-            ) : (
-              <RoadmapMain onRoadmapGenerated={setRoadmapData} />
-            )}
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Learning Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="py-12 text-center text-muted-foreground">
-                  <TrendingUp className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                  <p>Detailed analytics and progress tracking coming soon!</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Roadmap Generator Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5" />
-              Create Your Learning Roadmap
-            </DialogTitle>
-          </DialogHeader>
-          <RoadmapGeneratorCard
-            roadmapData={null}
-            setRoadmapData={handleRoadmapGenerated}
-            isLoading={isLoading}
-            setIsLoading={setIsLoading}
-            error={error}
-            setError={setError}
-            onReset={() => setOpen(false)}
+      <div className="mt-6">
+        {loading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-52 rounded-2xl" />
+            ))}
+          </div>
+        ) : error ? (
+          <EmptyState
+            icon={MapIcon}
+            title="We couldn't load your roadmaps"
+            description="Check your connection and try again."
+            action={
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            }
           />
-        </DialogContent>
-      </Dialog>
+        ) : roadmaps!.length === 0 ? (
+          <EmptyState
+            icon={MapIcon}
+            title="No roadmaps yet"
+            description="Generate your first personalized learning path. It takes less than a minute."
+            action={
+              <Button asChild>
+                <Link href="/roadmaps/new">
+                  <Plus /> Create your first roadmap
+                </Link>
+              </Button>
+            }
+          />
+        ) : visible.length === 0 ? (
+          <EmptyState
+            icon={Search}
+            title="No matching roadmaps"
+            description="Try a different search or filter."
+            action={
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setQuery("");
+                  setFilter("All");
+                }}
+              >
+                Clear filters
+              </Button>
+            }
+          />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {visible.map((r) => (
+              <RoadmapCard key={r._id} roadmap={r} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

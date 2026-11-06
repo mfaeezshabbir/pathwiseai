@@ -1,5 +1,5 @@
 import { genkit } from "genkit";
-import { googleAI } from "@genkit-ai/googleai";
+import { googleAI } from "@genkit-ai/google-genai";
 import { config } from "dotenv";
 
 // Delay reading environment variables and initializing genkit until runtime
@@ -11,7 +11,7 @@ export function getAI() {
   config();
   _ai = genkit({
     plugins: [googleAI()],
-    model: process.env.GENKIT_MODEL || "googleai/gemini-1.5-flash-latest",
+    model: process.env.GENKIT_MODEL || "googleai/gemini-2.5-flash",
   });
   return _ai;
 }
