@@ -72,7 +72,7 @@ export default function RootLayout({
               </main>
               <SiteFooter />
               <AssistantLauncher />
-              <Toaster position="bottom-center" richColors closeButton />
+              <Toaster position="bottom-center" />
             </TooltipProvider>
           </Providers>
         </ThemeProvider>

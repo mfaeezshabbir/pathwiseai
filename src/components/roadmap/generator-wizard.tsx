@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Brain,
+  CircleAlert,
   Check,
   Code2,
   Cpu,
@@ -14,6 +15,8 @@ import {
   Hammer,
   Palette,
   PlayCircle,
+  RotateCcw,
+  Settings2,
   Smartphone,
   Sparkles,
   TrendingUp,
@@ -23,6 +26,7 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import type { GenerateRoadmapOutput } from "@/lib/roadmap";
+import { readApiError } from "@/lib/api-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -121,6 +125,7 @@ function Wizard({ initialSkill }: { initialSkill: string }) {
   });
   const [generating, setGenerating] = useState(false);
   const [draft, setDraft] = useState<GenerateRoadmapOutput | null>(null);
+  const [failure, setFailure] = useState<{ message: string; code?: string } | null>(null);
 
   const set = <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
     setPrefs((p) => ({ ...p, [key]: value }));
@@ -138,6 +143,7 @@ function Wizard({ initialSkill }: { initialSkill: string }) {
   };
 
   const generate = async () => {
+    setFailure(null);
     setGenerating(true);
     try {
       const res = await fetch("/api/roadmap/generate", {
@@ -145,9 +151,21 @@ function Wizard({ initialSkill }: { initialSkill: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(prefs),
       });
-      if (!res.ok) throw new Error("generate failed");
+      if (!res.ok) {
+        setFailure(
+          await readApiError(res, "Something went wrong while generating your roadmap."),
+        );
+        setGenerating(false);
+        return;
+      }
       const roadmap: GenerateRoadmapOutput = await res.json();
-      if (!roadmap?.categories?.length) throw new Error("empty roadmap");
+      if (!roadmap?.categories?.length) {
+        setFailure({
+          message: "The AI returned an empty roadmap. Try again, or make the skill more specific.",
+        });
+        setGenerating(false);
+        return;
+      }
 
       const saveRes = await fetch("/api/roadmap/save", {
         method: "POST",
@@ -172,8 +190,8 @@ function Wizard({ initialSkill }: { initialSkill: string }) {
       setGenerating(false);
     } catch (err) {
       console.error("Roadmap generation failed:", err);
-      toast.error("We couldn't generate that roadmap", {
-        description: "Please try again. Rephrasing the skill can help.",
+      setFailure({
+        message: "We couldn't reach the server. Check your connection and try again.",
       });
       setGenerating(false);
     }
@@ -192,6 +210,48 @@ function Wizard({ initialSkill }: { initialSkill: string }) {
 
   if (generating) {
     return <GeneratingState skill={prefs.desiredSkill} />;
+  }
+
+  if (failure) {
+    const notConfigured = failure.code === "AI_NOT_CONFIGURED";
+    return (
+      <div className="mx-auto max-w-lg py-6 text-center" role="alert">
+        <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          {notConfigured ? <Settings2 className="size-6" /> : <CircleAlert className="size-6" />}
+        </span>
+        <h2 className="mt-6 text-2xl font-semibold tracking-tight">
+          {notConfigured ? "AI isn't configured yet" : "We couldn't build your roadmap"}
+        </h2>
+        <p className="mt-2 text-pretty text-muted-foreground">{failure.message}</p>
+
+        <div className="mt-6 rounded-xl border bg-card p-4 text-left text-sm">
+          <p className="text-xs font-medium text-muted-foreground">Your request</p>
+          <p className="mt-1 font-medium">{prefs.desiredSkill}</p>
+          <p className="mt-0.5 text-muted-foreground">
+            {[
+              levels.find((l) => l.value === prefs.knowledgeLevel)?.label,
+              `${times.find((t) => t.value === prefs.availableTime)?.label} / week`,
+              styles.find((st) => st.value === prefs.learningStyle)?.label,
+            ].join(" · ")}
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">
+          <Button onClick={generate}>
+            <RotateCcw /> Try again
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFailure(null);
+              setStep(0);
+            }}
+          >
+            Edit request
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

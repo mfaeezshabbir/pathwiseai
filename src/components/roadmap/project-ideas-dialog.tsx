@@ -5,6 +5,7 @@ import { Lightbulb, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import type { GenerateProjectIdeasOutput } from "@/ai/flows/generate-project-ideas";
+import { readApiError } from "@/lib/api-error";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -35,7 +36,11 @@ export function ProjectIdeasDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ skills, roadmapName: moduleTitle }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const { message } = await readApiError(res, "Please try again in a moment.");
+        toast.error("Couldn't generate project ideas", { description: message });
+        return;
+      }
       const result: GenerateProjectIdeasOutput = await res.json();
       setIdeas(result.projectIdeas);
       // Best-effort save so ideas show up on the profile page

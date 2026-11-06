@@ -9,6 +9,7 @@
  */
 
 import { getAI } from "@/ai/genkit";
+import { classifyAIError, hasAIKey } from "@/lib/ai-errors";
 import { z } from "genkit";
 import { createSuggestRoadmapTool } from "./suggest-roadmap";
 
@@ -48,6 +49,21 @@ export type AIAssistantTutorOutput = z.infer<
 export async function aiAssistantTutor(
   input: AIAssistantTutorInput,
 ): Promise<AIAssistantTutorOutput> {
+  // Server Action errors are masked in production, so return a readable reply instead
+  const failure = (err?: unknown): AIAssistantTutorOutput => ({
+    answer: [{ type: "text", text: classifyAIError(err ?? new Error("missing api key")).error }],
+  });
+  if (!hasAIKey()) return failure();
+
+  try {
+    return await runTutor(input);
+  } catch (err) {
+    console.error("aiAssistantTutor error:", err);
+    return failure(err);
+  }
+}
+
+async function runTutor(input: AIAssistantTutorInput): Promise<AIAssistantTutorOutput> {
   const ai = getAI();
   const suggestRoadmapTool = createSuggestRoadmapTool(ai);
 
