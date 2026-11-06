@@ -4,7 +4,7 @@ import type {
   RoadmapProject,
   RoadmapResource,
   RoadmapSubtopic,
-} from "@/ai/flows/generate-roadmap";
+} from "@/lib/ai/schemas";
 
 export type {
   GenerateRoadmapOutput,

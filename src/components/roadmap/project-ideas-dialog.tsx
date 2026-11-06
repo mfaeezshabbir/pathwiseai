@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Lightbulb, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-import type { GenerateProjectIdeasOutput } from "@/ai/flows/generate-project-ideas";
+import type { GenerateProjectIdeasOutput } from "@/lib/ai/schemas";
 import { readApiError } from "@/lib/api-error";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

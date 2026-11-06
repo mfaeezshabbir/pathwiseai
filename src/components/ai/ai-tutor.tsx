@@ -6,10 +6,7 @@ import { useSession } from "next-auth/react";
 import { ArrowUp, Map as MapIcon, RotateCcw, Sparkles, X } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  aiAssistantTutor,
-  type AIAssistantTutorOutput,
-} from "@/ai/flows/ai-assistant-tutor";
+import { askTutor } from "@/app/actions/tutor";
 import { cn } from "@/lib/utils";
 import { roadmapHref } from "@/lib/roadmap";
 import { Button } from "@/components/ui/button";
@@ -24,7 +21,8 @@ import { LogoMark } from "@/components/layout/logo";
 
 interface Message {
   role: "user" | "assistant";
-  content: AIAssistantTutorOutput["answer"];
+  content: string;
+  suggestions?: string[];
 }
 
 const starters = [
@@ -40,7 +38,7 @@ function ThinkingDots() {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60"
+          className="bg-muted-foreground/60 size-1.5 animate-bounce rounded-full"
           style={{ animationDelay: `${i * 120}ms` }}
         />
       ))}
@@ -74,18 +72,25 @@ export function AITutor() {
     const question = text.trim();
     if (!question || isLoading) return;
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", content: [{ type: "text", text: question }] },
-    ]);
+    const history: Message[] = [
+      ...messages,
+      { role: "user", content: question },
+    ];
+    setMessages(history);
     setInput("");
     setIsLoading(true);
 
     try {
-      const response = await aiAssistantTutor({ question });
+      const reply = await askTutor(
+        history.map(({ role, content }) => ({ role, content })),
+      );
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: response.answer },
+        {
+          role: "assistant",
+          content: reply.answer,
+          suggestions: reply.suggestions,
+        },
       ]);
     } catch (error) {
       console.error("AI Tutor Error:", error);
@@ -135,13 +140,13 @@ export function AITutor() {
         {messages.length === 0 ? (
           <div className="flex h-full flex-col justify-end gap-6">
             <div className="space-y-2">
-              <span className="inline-flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+              <span className="bg-accent text-accent-foreground inline-flex size-10 items-center justify-center rounded-xl">
                 <Sparkles className="size-5" />
               </span>
               <h3 className="text-lg font-semibold tracking-tight">
                 How can I help you learn today?
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 I can explain topics, review code, and suggest roadmaps you can
                 generate in one click.
               </p>
@@ -151,7 +156,7 @@ export function AITutor() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="rounded-lg border bg-card px-3 py-2.5 text-left text-sm transition-colors hover:border-primary/40 hover:bg-accent/50"
+                  className="bg-card hover:border-primary/40 hover:bg-accent/50 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors"
                 >
                   {s}
                 </button>
@@ -164,7 +169,7 @@ export function AITutor() {
               <div
                 key={index}
                 className={cn(
-                  "flex animate-fade-up",
+                  "animate-fade-up flex",
                   message.role === "user" ? "justify-end" : "justify-start",
                 )}
               >
@@ -172,38 +177,30 @@ export function AITutor() {
                   className={cn(
                     "max-w-[88%] space-y-2 text-sm leading-relaxed",
                     message.role === "user" &&
-                      "rounded-2xl rounded-br-md bg-primary px-3.5 py-2.5 text-primary-foreground",
+                      "bg-primary text-primary-foreground rounded-2xl rounded-br-md px-3.5 py-2.5",
                   )}
                 >
-                  {message.content.map((part, i) => {
-                    if (part.type === "text") {
-                      return (
-                        <p key={i} className="whitespace-pre-wrap">
-                          {part.text}
-                        </p>
-                      );
-                    }
-                    return (
-                      <Link
-                        key={i}
-                        href={roadmapHref(part.suggestion)}
-                        className="group flex items-center gap-3 rounded-xl border bg-card px-3 py-2.5 transition-colors hover:border-primary/40"
-                      >
-                        <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-                          <MapIcon className="size-4" />
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  {message.suggestions?.map((suggestion) => (
+                    <Link
+                      key={suggestion}
+                      href={roadmapHref(suggestion)}
+                      className="group bg-card hover:border-primary/40 flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-colors"
+                    >
+                      <span className="bg-accent text-accent-foreground flex size-8 items-center justify-center rounded-lg">
+                        <MapIcon className="size-4" />
+                      </span>
+                      <span className="flex-1">
+                        <span className="text-muted-foreground block text-xs">
+                          Suggested roadmap
                         </span>
-                        <span className="flex-1">
-                          <span className="block text-xs text-muted-foreground">
-                            Suggested roadmap
-                          </span>
-                          <span className="font-medium">{part.suggestion}</span>
-                        </span>
-                        <span className="text-xs font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                          Generate →
-                        </span>
-                      </Link>
-                    );
-                  })}
+                        <span className="font-medium">{suggestion}</span>
+                      </span>
+                      <span className="text-primary text-xs font-medium opacity-0 transition-opacity group-hover:opacity-100">
+                        Generate →
+                      </span>
+                    </Link>
+                  ))}
                 </div>
               </div>
             ))}
@@ -219,7 +216,7 @@ export function AITutor() {
         }}
         className="border-t p-3"
       >
-        <div className="flex items-end gap-2 rounded-xl border bg-background p-1.5 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/30">
+        <div className="bg-background focus-within:border-ring focus-within:ring-ring/30 flex items-end gap-2 rounded-xl border p-1.5 focus-within:ring-[3px]">
           <label htmlFor="assistant-input" className="sr-only">
             Message the assistant
           </label>
@@ -236,7 +233,7 @@ export function AITutor() {
             }}
             rows={1}
             placeholder="Ask anything…"
-            className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            className="placeholder:text-muted-foreground max-h-40 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none"
           />
           <Button
             type="submit"
@@ -248,7 +245,7 @@ export function AITutor() {
             <ArrowUp />
           </Button>
         </div>
-        <p className="mt-2 px-1 text-[11px] text-muted-foreground">
+        <p className="text-muted-foreground mt-2 px-1 text-[11px]">
           AI can make mistakes. Verify important information.
         </p>
       </form>
@@ -278,12 +275,12 @@ export function AssistantLauncher() {
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="fixed right-4 bottom-4 z-40 h-11 gap-2 rounded-full px-4 shadow-lg shadow-primary/20 sm:right-6 sm:bottom-6"
+        className="shadow-primary/20 fixed right-4 bottom-4 z-40 h-11 gap-2 rounded-full px-4 shadow-lg sm:right-6 sm:bottom-6"
         aria-label="Open AI assistant"
       >
         <Sparkles />
         <span className="hidden sm:inline">Ask AI</span>
-        <kbd className="hidden rounded border border-primary-foreground/25 px-1.5 font-mono text-[10px] opacity-75 lg:inline">
+        <kbd className="border-primary-foreground/25 hidden rounded border px-1.5 font-mono text-[10px] opacity-75 lg:inline">
           Ctrl J
         </kbd>
       </Button>

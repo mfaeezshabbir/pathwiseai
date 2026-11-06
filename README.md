@@ -18,7 +18,7 @@ PathWise AI is a personalized learning roadmap generator powered by AI. It helps
 ## 🛠️ Tech Stack
 
 - **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack) & React 19
-- **Generative AI:** [Genkit](https://genkit.dev/) with the Google GenAI plugin (Gemini)
+- **Generative AI:** [Vercel AI SDK](https://ai-sdk.dev/) with Gemini by default, or any OpenAI-compatible provider
 - **UI:** [Tailwind CSS v4](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/) (Radix UI)
 - **Auth & data:** NextAuth (credentials) & MongoDB
 - **Language:** TypeScript
@@ -68,13 +68,18 @@ npm run docker:app        # builds the app image and starts app + MongoDB
 
 The production build is served at [http://localhost:3000](http://localhost:3000). To wipe the local database, run `docker compose down -v`.
 
-### Genkit developer UI (optional)
+### Choosing an AI provider
 
-AI flows run inside the Next.js server, so this isn't required. To inspect and test flows in the Genkit UI:
+Gemini is the default (`GEMINI_API_KEY`). To use any OpenAI-compatible API instead, such as OpenCode Zen, OpenRouter or a local Ollama, set these in `.env`:
 
-```bash
-npm run genkit:dev
+```env
+AI_PROVIDER=openai-compatible
+AI_BASE_URL=https://your-provider.example/v1
+AI_API_KEY=...
+AI_MODEL=your-model-id
 ```
+
+Roadmap generation relies on structured (JSON) output, so pick a model that supports it.
 
 ## 📝 To-Do / Future Enhancements
 

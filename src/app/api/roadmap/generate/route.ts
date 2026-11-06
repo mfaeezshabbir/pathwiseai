@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateRoadmap } from "@/ai/flows/generate-roadmap";
-import { getUserId } from "@/lib/auth";
+import { generateRoadmap } from "@/lib/ai/generate";
+import { RoadmapInputSchema } from "@/lib/ai/schemas";
 import { aiErrorResponse, hasAIKey } from "@/lib/ai-errors";
+import { getUserId } from "@/lib/auth";
 
 // Roadmap generation can take a while for large skills
 export const maxDuration = 60;
@@ -11,22 +12,18 @@ export async function POST(req: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  if (!hasAIKey()) return aiErrorResponse(new Error("missing api key"));
+  if (!hasAIKey()) return aiErrorResponse();
+
+  const parsed = RoadmapInputSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Please enter a skill to learn (2-120 characters)." },
+      { status: 400 },
+    );
+  }
+
   try {
-    const body = await req.json();
-    if (typeof body?.desiredSkill !== "string" || !body.desiredSkill.trim()) {
-      return NextResponse.json({ error: "Missing skill" }, { status: 400 });
-    }
-    const roadmap = await generateRoadmap({
-      desiredSkill: body.desiredSkill.trim().slice(0, 120),
-      knowledgeLevel: String(body.knowledgeLevel ?? "beginner"),
-      availableTime: String(body.availableTime ?? "4-6 hours"),
-      learningStyle: body.learningStyle ? String(body.learningStyle) : undefined,
-      specificGoals: body.specificGoals
-        ? String(body.specificGoals).slice(0, 500)
-        : undefined,
-    });
-    return NextResponse.json(roadmap);
+    return NextResponse.json(await generateRoadmap(parsed.data));
   } catch (err) {
     console.error("/api/roadmap/generate error:", err);
     return aiErrorResponse(err);
